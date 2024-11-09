@@ -28,21 +28,26 @@ export default {
     };
   },
   methods: {
-    RESTlogin() {
-      const path = `${process.env.VUE_APP_ROOT_URL}/login`;
-      axios
-        .post(path, {
-          username: this.username,
-          password: this.password
-        })
-        .then((response) => {
-          this.$store.commit('setToken', response.data.token); // Storing the token in Vuex or localStorage
-          this.$router.push('/home'); // Redirect user after login
-        })
-        .catch((error) => {
-          console.error("Login failed:", error);
-        });
-    }
+    // Send password and username and get the role
+    handleLogin() {
+    const path = `${process.env.VUE_APP_ROOT_URL}/login`;
+    axios.post(path, {
+      username: this.username,
+      password: this.password
+    })
+    .then((response) => {
+      // Store token, username, and role in localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('username', response.data.user.username);
+      localStorage.setItem('role', response.data.user.role);
+
+      // Redirect to home page
+      this.$router.push('/home');
+    })
+    .catch((error) => {
+      console.error("Login failed:", error);
+    });
+  }
 }
 };
 </script>

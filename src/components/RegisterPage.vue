@@ -15,6 +15,9 @@
     <label for="confirmPassword">Confirm Password</label>
     <input type="password" id="confirmPassword" v-model="confirmPassword" required />
 
+    <label for="dob">Date of Birth</label>
+    <input type="date" id="dob" v-model="date_of_birth" required />
+
     <button type="submit" class="submit-button">Register</button>
 
     <p class="login-link">
@@ -26,22 +29,45 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
-data() {
+  data() {
     return {
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      date_of_birth: ''
     };
-},
-methods: {
+  },
+  methods: {
     handleRegister() {
-    // Add your registration logic (e.g., API call)
+      const payload = {
+        username: this.username,
+        email: this.email,
+        password: this.password,
+        date_of_birth: this.date_of_birth
+      };
+
+      // Call the backend API to register the user
+      axios
+        .post(`${process.env.VUE_APP_ROOT_URL}/register`, payload)
+        .then(() => {
+          // Show success message (optional)
+          alert("Registration successful! Please log in.");
+
+          // Redirect to the login page
+          this.$router.push('/');
+        })
+        .catch((error) => {
+          console.error("Registration failed:", error);
+        });
     }
-}
+  }
 };
 </script>
+
 
 <style scoped>
 .register-page {
