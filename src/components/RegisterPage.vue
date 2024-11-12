@@ -1,31 +1,34 @@
 <template>
-<div class="register-page">
+  <div class="register-page">
     <h2>Create Your Account</h2>
     <p>Join the best bank in the world</p>
     <form @submit.prevent="handleRegister" class="register-form">
-    <label for="username">Username</label>
-    <input type="text" id="username" v-model="username" required />
+      <label for="username">Username</label>
+      <input type="text" id="username" v-model="username" required />
 
-    <label for="email">Email</label>
-    <input type="email" id="email" v-model="email" required />
+      <label for="email">Email</label>
+      <input type="email" id="email" v-model="email" required />
 
-    <label for="password">Password</label>
-    <input type="password" id="password" v-model="password" required />
+      <label for="password">Password</label>
+      <input type="password" id="password" v-model="password" required />
 
-    <label for="confirmPassword">Confirm Password</label>
-    <input type="password" id="confirmPassword" v-model="confirmPassword" required />
+      <label for="confirmPassword">Confirm Password</label>
+      <input type="password" id="confirmPassword" v-model="confirmPassword" required />
 
-    <label for="dob">Date of Birth</label>
-    <input type="date" id="dob" v-model="date_of_birth" required />
+      <label for="country">Country</label>
+      <input type="text" id="country" v-model="country" required />
+      
+      <label for="dob">Date of Birth</label>
+      <input type="date" id="dob" v-model="date_of_birth" required />
 
-    <button type="submit" class="submit-button">Register</button>
+      <button type="submit" class="submit-button">Register</button>
 
-    <p class="login-link">
+      <p class="login-link">
         Already have an account?
-        <router-link to="/" class="link">Log in here</router-link>
-    </p>
+        <router-link to="/login" class="link">Log in here</router-link>
+      </p>
     </form>
-</div>
+  </div>
 </template>
 
 <script>
@@ -34,40 +37,52 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      username: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      date_of_birth: ''
+      username: '', // User's username
+      email: '', // User's email
+      password: '', // User's password
+      confirmPassword: '', // User's password confirmation
+      country: '', // User's country
+      date_of_birth: '', // User's date of birth
     };
   },
   methods: {
     handleRegister() {
+      // Check if passwords match
+      if (this.password !== this.confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      // Call RESTregister to send the data to the backend
+      this.RESTregister();
+    },
+    RESTregister() {
+      const path = `${process.env.VUE_APP_ROOT_URL}/register`; // Backend API URL
+
+      // Prepare the payload with form data
       const payload = {
-        username: this.username,
-        email: this.email,
-        password: this.password,
-        date_of_birth: this.date_of_birth
+        name: this.username, // User's name
+        email: this.email, // User's email
+        password: this.password, // User's password
+        country: this.country, // User's country
+        date_of_birth: this.date_of_birth, // User's date of birth
       };
 
-      // Call the backend API to register the user
       axios
-        .post(`${process.env.VUE_APP_ROOT_URL}/register`, payload)
-        .then(() => {
-          // Show success message (optional)
-          alert("Registration successful! Please log in.");
-
-          // Redirect to the login page
-          this.$router.push('/');
+        .post(path, payload) // Send POST request with the payload
+        .then((response) => {
+          console.log("Registration successful:", response.data);
+          alert(`Welcome, ${response.data.name}! Registration successful.`);
+          this.$router.push("/login"); // Redirect to the login page
         })
         .catch((error) => {
-          console.error("Registration failed:", error);
+          console.error("Registration failed:", error.response?.data || error.message);
+          alert("Registration failed. Please check your details and try again.");
         });
-    }
-  }
+    },
+  },
 };
 </script>
-
 
 <style scoped>
 .register-page {

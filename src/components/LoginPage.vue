@@ -2,7 +2,7 @@
   <div class="login-page">
     <h2>Welcome Back to IE Bank</h2>
     <p>Please log in to continue</p>
-    <form @submit.prevent="handleLogin" class="login-form">
+    <form @submit.prevent="login" class="login-form">
       <label for="username">Username</label>
       <input type="text" id="username" v-model="username" required />
 
@@ -20,35 +20,54 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
-      username: '',
-      password: ''
+      username: "", // Stores the username input
+      password: "", // Stores the password input
     };
   },
   methods: {
-    // Send password and username and get the role
-    handleLogin() {
-    const path = `${process.env.VUE_APP_ROOT_URL}/login`;
-    axios.post(path, {
-      username: this.username,
-      password: this.password
-    })
-    .then((response) => {
-      // Store token, username, and role in localStorage
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('username', response.data.user.username);
-      localStorage.setItem('role', response.data.user.role);
+    // Login API method
+    RESTlogin(username, password) {
+      const path = `${process.env.VUE_APP_ROOT_URL}/login`; // Backend API URL
+      const payload = { username, password };
 
-      // Redirect to home page
-      this.$router.push('/home');
-    })
-    .catch((error) => {
-      console.error("Login failed:", error);
-    });
-  }
-}
+      axios
+        .post(path, payload)
+        .then((response) => {
+          // Handle successful login
+          console.log("Login successful:", response.data);
+          alert(`Welcome back, ${response.data.name || username}!`);
+
+          // Store user info or token if required
+          localStorage.setItem("authToken", response.data.token || ""); // Example: Store token
+
+          // Redirect based on role (optional)
+          if (response.data.role === "admin") {
+            this.$router.push("/admin");
+          } else {
+            this.$router.push("/user");
+          }
+        })
+        .catch((error) => {
+          // Handle login error
+          console.error("Login failed:", error.response?.data || error.message);
+          alert("Login failed. Please check your credentials.");
+        });
+    },
+
+    // Login handler
+    login() {
+      if (!this.username || !this.password) {
+        alert("Please fill in both fields.");
+        return;
+      }
+      this.RESTlogin(this.username, this.password);
+    },
+  },
 };
 </script>
 
@@ -70,7 +89,7 @@ h2 {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  color: transparent; /* Fallback for non-webkit browsers */
+  color: transparent; 
 }
 
 p {
