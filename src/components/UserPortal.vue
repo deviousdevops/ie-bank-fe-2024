@@ -178,25 +178,14 @@ export default {
       this.$refs.transactionModal.show();
     },
     
-    //GET functions
-    RESTgetTransactions() {
-      const path = `${process.env.VUE_APP_ROOT_URL}/transactions`;
-      axios
-        .get(path)
-        .then((response) => {
-          this.transactions = response.data.transactions;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    },
-
-    RESTgetAccounts() {
-      const path = `${process.env.VUE_APP_ROOT_URL}/accounts`;
+    //GET function
+    RESTgetAccountsandTransactions() {
+      const path = `${process.env.VUE_APP_ROOT_URL}/user_portal`;
       axios
         .get(path)
         .then((response) => {
           this.accounts = response.data.accounts;
+          this.transactions = response.data.transactions;
         })
         .catch((error) => {
           console.error(error);
@@ -227,7 +216,7 @@ export default {
       axios
         .post(path, payload)
         .then((response) => {
-          this.RESTgetTransactions();
+          this.RESTgetAccountsandTransactions();
           this.message = "Transaction created successfully!";
           this.showMessage = true;
           setTimeout(() => {
@@ -236,7 +225,7 @@ export default {
         })
         .catch((error) => {
           console.error(error);
-          this.RESTgetTransactions();
+          this.RESTgetAccountsandTransactions();
         });
     },
 
@@ -390,8 +379,7 @@ export default {
     },
 
   created() {
-    this.RESTgetAccounts();
-    this.RESTgetTransactions();
+    this.RESTgetAccountsandTransactions();
   },
 };
 </script>
