@@ -2,12 +2,19 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import HomePage from '../components/HomePage.vue'
 import LoginPage from '../components/LoginPage.vue'
+import UserPortal from '../components/UserPortal.vue'
 import RegisterPage from '../components/RegisterPage.vue'
 import AdminPortal from '../components/AdminPortal.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
+  {
+    path: '/user',
+    name: 'UserPortal',
+    component: UserPortal,
+  },
+
   {
     path: '/',
     name: 'Home',
