@@ -46,7 +46,6 @@ export default {
       role: '', // User's country
       status: '', // User's date of birth
     };
-
   },
   methods: {
     handleRegister() {

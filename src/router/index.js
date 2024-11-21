@@ -13,6 +13,7 @@ const routes = [
     path: '/user',
     name: 'UserPortal',
     component: UserPortal,
+    //meta: { requiresAuth: true, role: 'user' }
   },
 
   {
@@ -34,7 +35,7 @@ const routes = [
     path: '/admin',
     name: 'AdminPortal',
     component: AdminPortal,
-    meta: { requiresAuth: true, role: 'admin' }
+    //meta: { requiresAuth: true, role: 'admin' }
   }
 ]
 
