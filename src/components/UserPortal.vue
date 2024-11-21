@@ -130,8 +130,8 @@ import axios from "axios";
 export default {
   data() {
   return {
-    accounts: {},
-    transactions: {},
+    accounts: [],
+    transactions: [],
     createTransactionForm: {
         amount: '',
         currency: "",
