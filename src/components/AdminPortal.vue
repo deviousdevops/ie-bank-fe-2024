@@ -74,7 +74,7 @@ export default {
   name: "AdminPortal",
   data() {
     return {
-      useraccounts: [],
+      useraccounts: {},
       createUserAccountForm: {
         username: "",
         email: "",
