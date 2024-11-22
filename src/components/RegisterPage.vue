@@ -40,6 +40,8 @@ export default {
       id: '',
       username: '', // User's username
       email: '', // User's email
+      password: '', // User's password
+      confirmPassword: '', // User's password confirmation
       country: '', // User's password
       state: '',
       date_of_birth: '', // User's password confirmation
