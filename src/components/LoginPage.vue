@@ -31,7 +31,6 @@ export default {
       password: '', // User's password
       confirmPassword: '', // User's password confirmation
       country: '', // User's password
-      state: '',
       date_of_birth: '', // User's password confirmation
       role: '', // User's country
       status: '', // User's date of birth
@@ -40,16 +39,15 @@ export default {
   methods: {
     // Login API method
     RESTlogin(username, password) {
-      const path = `${process.env.VUE_APP_ROOT_URL}/login`; // Backend API URL
+      const path =`${process.env.VUE_APP_ROOT_URL}/login`;
       const payload = { username, password };
 
       axios
-        console.log(path)
         .post(path, payload)
         .then((response) => {
           // Handle successful login
           console.log("Login successful:", response.data);
-          alert(`Welcome back, ${response.data.name || username}!`);
+          alert(`Welcome back, ${response.data.username || username}!`);
 
           // Store user info or token if required
           localStorage.setItem("authToken", response.data.token || ""); // Example: Store token
@@ -75,6 +73,7 @@ export default {
         alert("Please fill in both fields.");
         return;
       }
+      console.log(this.username, this.password); // Debug username and password
       this.RESTlogin(this.username, this.password);
     },
   },

@@ -45,6 +45,8 @@ const router = new VueRouter({
   routes
 })
 
+
+
 /*
 // Add Navigation Guard
 router.beforeEach((to, from, next) => {

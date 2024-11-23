@@ -43,23 +43,72 @@ export default {
       password: '', // User's password
       confirmPassword: '', // User's password confirmation
       country: '', // User's password
-      state: '',
       date_of_birth: '', // User's password confirmation
       role: '', // User's country
       status: '', // User's date of birth
+      message: "",       // The alert message text
+      alertVariant: "",  // The type of alert ("success", "danger", etc.)
+      showAlert: false,
     };
   },
   methods: {
     handleRegister() {
-      // Check if passwords match
-      if (this.password !== this.confirmPassword) {
-        alert("Passwords do not match!");
+      if (this.username.length < 6) {
+        this.showMessage("Username must be at least 6 characters long.", "danger");
         return;
       }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(this.email)) {
+        this.showMessage("Please enter a valid email address.", "danger");
+        return;
+      }
+      if (this.password.length < 8) {
+        this.showMessage("Password must be at least 8 characters long.", "danger");
+        return;
+      }
+      const passwordRegex = /^(?=.*[0-9])[a-zA-Z0-9]+$/;
+      if (!passwordRegex.test(this.password)) {
+        this.showMessage(
+          "Password must contain only letters and numbers and include at least one number.",
+          "danger"
+        );
+        return;
+      }
+      if (this.password !== this.confirmPassword) {
+        this.showMessage("Passwords do not match!", "danger");
+        return;
+      }
+      const today = new Date();
+      const birthDate = new Date(this.date_of_birth);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDifference = today.getMonth() - birthDate.getMonth();
+      if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      if (isNaN(birthDate)) {
+        this.showMessage("Please enter a valid date of birth.", "danger");
+        return;
+      }
+      if (age < 18) {
+        this.showMessage("You must be at least 18 years old to register.", "danger");
+        return;
+      }
+      this.showMessage("Validation successful! Proceeding with registration.", "success");
 
       // Call RESTregister to send the data to the backend
-      this.RESTregister();
+      setTimeout(() => this.RESTregister(), 3000);
     },
+    showMessage(message, variant) {
+      this.message = message;
+      this.alertVariant = variant;
+      this.showAlert = true;
+
+      // Hide alert after 3 seconds
+      setTimeout(() => {
+        this.showAlert = false;
+      }, 3000);
+    },
+
     RESTregister() {
       const path = `${process.env.VUE_APP_ROOT_URL}/register`; // Backend API URL
 

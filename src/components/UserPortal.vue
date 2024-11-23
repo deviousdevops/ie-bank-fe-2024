@@ -198,7 +198,7 @@ export default {
       axios
         .post(path, payload)
         .then((response) => {
-          this.RESTgetAccounts();
+          this.RESTgetAccountsandTransactions();
           this.message = "Account Created successfully!";
           this.showMessage = true;
           setTimeout(() => {
@@ -207,7 +207,7 @@ export default {
         })
         .catch((error) => {
           console.error(error);
-          this.RESTgetAccounts();
+          this.RESTgetAccountsandTransactions();
         });
     },  
 
@@ -235,7 +235,7 @@ export default {
       axios
         .put(path, payload)
         .then(() => {
-          this.RESTgetAccounts();
+          this.RESTgetAccountsandTransactions();
           this.message = "Account Updated successfully!";
           this.showMessage = true;
           setTimeout(() => {
@@ -244,7 +244,7 @@ export default {
         })
         .catch((error) => {
           console.error(error);
-          this.RESTgetAccounts();
+          this.RESTgetAccountsandTransactions();
         });
     },
 
@@ -265,8 +265,8 @@ export default {
           console.error(error);
           this.RESTgetAccounts();
         });
-      }
-    },    
+      },
+ 
 
 
   /***************************************************
@@ -381,7 +381,8 @@ export default {
   created() {
     this.RESTgetAccountsandTransactions();
   },
-};
+},
+}
 </script>
 
 
