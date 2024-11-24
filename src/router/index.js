@@ -13,9 +13,8 @@ const routes = [
     path: '/user',
     name: 'UserPortal',
     component: UserPortal,
-    //meta: { requiresAuth: true, role: 'user' }
+    meta: { requiresAuth: true, role: 'user' }
   },
-
   {
     path: '/',
     name: 'Home',
@@ -35,7 +34,7 @@ const routes = [
     path: '/admin',
     name: 'AdminPortal',
     component: AdminPortal,
-    //meta: { requiresAuth: true, role: 'admin' }
+    meta: { requiresAuth: true, role: 'admin' }
   }
 ]
 
@@ -45,31 +44,21 @@ const router = new VueRouter({
   routes
 })
 
-
-
-/*
-// Add Navigation Guard
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem('authToken'); // Check if user is logged in
-  const userRole = localStorage.getItem('role'); // Get user role
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
+  const userRole = localStorage.getItem('userRole')
 
-  // Check if route requires authentication
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!isAuthenticated) {
-      // Redirect to login if not authenticated
-      return next('/login');
+      next('/login')
+    } else if (to.meta.role && to.meta.role !== userRole) {
+      next('/')
+    } else {
+      next()
     }
-
-    // Check role-based access
-    if (to.meta.role && to.meta.role !== userRole) {
-      // Redirect to home if role doesn't match
-      return next('/');
-    }
+  } else {
+    next()
   }
-
-  // Allow access if no restrictions
-  next();
-});
-*/
+})
 
 export default router

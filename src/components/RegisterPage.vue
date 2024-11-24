@@ -2,6 +2,9 @@
   <div class="register-page">
     <h2>Create Your Account</h2>
     <p>Join the best bank in the world</p>
+    <div v-if="showAlert" :class="['alert', `alert-${alertVariant}`]">
+      {{ message }}
+    </div>
     <form @submit.prevent="handleRegister" class="register-form">
       <label for="username">Username</label>
       <input type="text" id="username" v-model="username" required />
@@ -17,7 +20,7 @@
 
       <label for="country">Country</label>
       <input type="text" id="country" v-model="country" required />
-      
+
       <label for="dob">Date of Birth</label>
       <input type="date" id="dob" v-model="date_of_birth" required />
 
@@ -42,10 +45,10 @@ export default {
       email: '', // User's email
       password: '', // User's password
       confirmPassword: '', // User's password confirmation
-      country: '', // User's password
-      date_of_birth: '', // User's password confirmation
-      role: '', // User's country
-      status: '', // User's date of birth
+      country: '', // User's country
+      date_of_birth: '', // User's date of birth
+      role: '', // User's role
+      status: '', // User's status
       message: "",       // The alert message text
       alertVariant: "",  // The type of alert ("success", "danger", etc.)
       showAlert: false,
@@ -214,5 +217,24 @@ font-weight: bold;
 
 .link:hover {
 color: #0648d7;
+}
+
+.alert {
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+  width: 80%;
+  max-width: 500px;
+}
+
+.alert-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.alert-danger {
+  background-color: #f44336;
+  color: white;
 }
 </style>

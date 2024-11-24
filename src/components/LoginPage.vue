@@ -12,7 +12,7 @@
       <button type="submit" class="submit-button">Login</button>
 
       <p class="register-link">
-        Don't have an account? 
+        Don't have an account?
         <router-link to="/register" class="link">Register here</router-link>
       </p>
     </form>
@@ -25,35 +25,45 @@ import axios from "axios";
 export default {
   data() {
     return {
-      id: '',
-      username: '', // User's username
-      email: '', // User's email
-      password: '', // User's password
-      confirmPassword: '', // User's password confirmation
-      country: '', // User's password
-      date_of_birth: '', // User's password confirmation
-      role: '', // User's country
-      status: '', // User's date of birth
+      username: '',
+      password: '',
     };
   },
   methods: {
+    // Login handler
+    login() {
+      if (!this.username || !this.password) {
+        alert("Please fill in both fields.");
+        return;
+      }
+      this.RESTlogin(this.username, this.password);
+    },
+
     // Login API method
     RESTlogin(username, password) {
-      const path =`${process.env.VUE_APP_ROOT_URL}/login`;
+      const path = `${process.env.VUE_APP_ROOT_URL}/login`;
       const payload = { username, password };
 
       axios
-        .post(path, payload)
+        .post(path, payload, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
         .then((response) => {
-          // Handle successful login
+          // Store user info and session data
+          localStorage.setItem("user", JSON.stringify(response.data));
+          localStorage.setItem("isAuthenticated", "true");
+          localStorage.setItem("userRole", response.data.role || "user");
+          localStorage.setItem("userId", response.data.id);
+
           console.log("Login successful:", response.data);
+
+          // Welcome message
           alert(`Welcome back, ${response.data.username || username}!`);
 
-          // Store user info or token if required
-          localStorage.setItem("authToken", response.data.token || ""); // Example: Store token
-          console.log(response)
-
-          // Redirect based on role (optional)
+          // Redirect based on role
           if (response.data.role === "admin") {
             this.$router.push("/admin");
           } else {
@@ -61,22 +71,17 @@ export default {
           }
         })
         .catch((error) => {
-          // Handle login error
           console.error("Login failed:", error.response?.data || error.message);
+          localStorage.clear(); // Clear any existing auth data
           alert("Login failed. Please check your credentials.");
         });
     },
-
-    // Login handler
-    login() {
-      if (!this.username || !this.password) {
-        alert("Please fill in both fields.");
-        return;
-      }
-      console.log(this.username, this.password); // Debug username and password
-      this.RESTlogin(this.username, this.password);
-    },
   },
+  // Clear sensitive data when component is destroyed
+  beforeDestroy() {
+    this.username = '';
+    this.password = '';
+  }
 };
 </script>
 
@@ -98,7 +103,7 @@ h2 {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  color: transparent; 
+  color: transparent;
 }
 
 p {
