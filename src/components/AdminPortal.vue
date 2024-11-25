@@ -26,7 +26,7 @@
       <tbody>
         <tr v-for="user in useraccounts" :key="user.id">
           <td>{{ user.username }}</td>
-          <td>{{ user.hashed_password }}</td>
+          <td>{{ user.password }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.date_of_birth }}</td>
           <td>{{ user.status }}</td>
@@ -45,19 +45,19 @@
     <b-modal ref="userModal" :title="isEditing ? 'Edit User' : 'Create New User'" hide-footer>
       <b-form @submit.prevent="isEditing ? onSubmitUpdate() : onSubmitCreate()" class="modal-form">
         <b-form-group label="Username" label-for="username-input">
-          <b-form-input id="username-input" v-model="editUserAccountForm.username" required></b-form-input>
+          <b-form-input id="username-input" placeholder="Enter username" v-model="editUserAccountForm.username" required></b-form-input>
         </b-form-group>
         <b-form-group label="Password" label-for="password-input">
-          <b-form-input id="password-input" type="password" v-model="editUserAccountForm.hashed_password" required></b-form-input>
+          <b-form-input id="password-input" type="password" placeholder="Enter password" v-model="editUserAccountForm.password" required></b-form-input>
         </b-form-group>
         <b-form-group label="Email" label-for="email-input">
-          <b-form-input id="email-input" type="email" v-model="editUserAccountForm.email" required></b-form-input>
+          <b-form-input id="email-input" type="email" placeholder="Enter email address" v-model="editUserAccountForm.email" required></b-form-input>
         </b-form-group>
         <b-form-group label="Date of Birth" label-for="dob-input">
-          <b-form-input id="dob-input" type="date" v-model="editUserAccountForm.date_of_birth" required></b-form-input>
+          <b-form-input id="dob-input" type="date" placeholder="Select date of birth" v-model="editUserAccountForm.date_of_birth" required></b-form-input>
         </b-form-group>
         <b-form-group label="Status" label-for="status-input">
-          <b-form-input id="status-input" v-model="editUserAccountForm.status" required></b-form-input>
+          <b-form-input id="status-input" placeholder="Enter user status (e.g., Active, Inactive)" v-model="editUserAccountForm.status" required></b-form-input>
         </b-form-group>
         <b-form-group label="Role" label-for="role-input">
           <b-form-input id="role-input" v-model="editUserAccountForm.role" required></b-form-input>

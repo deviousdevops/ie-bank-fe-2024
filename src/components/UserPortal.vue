@@ -84,7 +84,7 @@
           <b-form-input type="number" v-model="createAccountForm.balance" placeholder="Enter positive balance" required></b-form-input>
         </b-form-group>
         <b-form-group label="Currency" :state="isCurrencyValid" invalid-feedback="Currency must be a valid symbol (e.g., € or $)">
-          <b-form-input v-model="createAccountForm.currency" placeholder="Enter currency (€ or $)" @input="validateCurrency" required></b-form-input>
+          <b-form-input v-model="createAccountForm.currency" placeholder="Enter currency (EUR, USD)" @input="validateCurrency" required></b-form-input>
         </b-form-group>
         <b-form-group label="Country">
           <b-form-input v-model="createAccountForm.country" placeholder="Enter country" required></b-form-input>
@@ -212,7 +212,7 @@ export default {
     async onSubmitAccount() {
       this.validateCurrency('account'); // Validate the account creation currency
       if (!this.isCurrencyValid) {
-        this.showMessage('Please enter a valid currency symbol (e.g., € or $)');
+        this.showMessage('Please enter a valid currency symbol (e.g., EUR, USD)');
         return;
       }
       try {
@@ -250,7 +250,7 @@ export default {
       }
     },
     validateCurrency(formType = 'account') {
-      const validCurrencySymbols = ['€', '$', '£', '¥', '₹']; // Add more symbols as needed
+      const validCurrencyCodes = ['EUR', 'USD', 'GBP', 'JPY', 'INR'];
       const currencyValue =
         formType === 'account'
           ? this.createAccountForm.currency.trim()
@@ -266,7 +266,7 @@ export default {
       this.validateCurrency('transaction');
       this.validateToAccountNumber();
       if (!this.isCurrencyValid) {
-        this.showMessage('Please enter a valid currency symbol (e.g., € or $)');
+        this.showMessage('Please enter a valid currency symbol (e.g., EUR, USD)');
         return;
       }
       if (!this.isToAccountNumberValid) {
