@@ -67,9 +67,9 @@
           <td>{{ transaction.created_at }}</td>
           <td>{{ transaction.amount }}</td>
           <td>{{ transaction.currency }}</td>
-          <td>{{ transaction.from_account_id }}</td>
-          <td>{{ transaction.to_account_id }}</td>
-          <td>{{ transaction.transaction_status }}</td>
+          <td>{{ transaction.from_account }}</td>
+          <td>{{ transaction.to_account }}</td>
+          <td>{{ transaction.status }}</td>
         </tr>
       </tbody>
     </table>
@@ -83,8 +83,8 @@
         <b-form-group label="Balance">
           <b-form-input type="number" v-model="createAccountForm.balance" placeholder="Enter positive balance" required></b-form-input>
         </b-form-group>
-        <b-form-group label="Currency">
-          <b-form-input v-model="createAccountForm.currency" placeholder="Enter currency (€ or $)" required></b-form-input>
+        <b-form-group label="Currency" :state="isCurrencyValid" invalid-feedback="Currency must be a valid symbol (e.g., € or $)">
+          <b-form-input v-model="createAccountForm.currency" placeholder="Enter currency (€ or $)" @input="validateCurrency" required></b-form-input>
         </b-form-group>
         <b-form-group label="Country">
           <b-form-input v-model="createAccountForm.country" placeholder="Enter country" required></b-form-input>
@@ -99,18 +99,21 @@
         <b-form-group label="Amount">
           <b-form-input type="number" v-model="createTransactionForm.amount" placeholder="Enter transaction amount" required></b-form-input>
         </b-form-group>
-        <b-form-group label="Currency">
-          <b-form-input v-model="createTransactionForm.currency" placeholder="Enter currency (€ or $)" required></b-form-input>
+        <b-form-group label="Currency" :state="isCurrencyValid" invalid-feedback="Currency must be a valid symbol (e.g., € or $)">
+          <b-form-input v-model="createTransactionForm.currency" placeholder="Enter currency (€ or $)" @input="validateCurrency" required></b-form-input>
         </b-form-group>
         <b-form-group label="From Account Number">
-          <b-form-input v-model="createTransactionForm.from_account_number" placeholder="Enter source account number" required></b-form-input>
+          <b-form-select v-model="createTransactionForm.from_account_number" :options="accountOptions" placeholder="Select an account number" required></b-form-select>
         </b-form-group>
-        <b-form-group label="To Account Number">
-          <b-form-input v-model="createTransactionForm.to_account_number" placeholder="Enter recipient account number" required></b-form-input>
+        <b-form-group label="To Account Number" :state="isToAccountNumberValid" invalid-feedback="Account number must be numeric">
+          <b-form-input v-model="createTransactionForm.to_account_number" placeholder="Enter recipient account number" @input="validateToAccountNumber" required></b-form-input>
         </b-form-group>
-        <b-button type="submit" class="modal-submit-button" variant="success">Create Transaction</b-button>
+        <b-button type="submit" class="modal-submit-button" variant="success">
+          Create Transaction
+        </b-button>
       </b-form>
     </b-modal>
+
 
     <!-- Edit Account Modal -->
     <b-modal ref="editAccountModal" id="edit-account-modal" title="Edit Account" hide-footer>
@@ -151,6 +154,8 @@ export default {
       alertVariant: '', // Define alertVariant
       message: '', // Define message
       accountOptions: [], // Define accountOptions
+      isCurrencyValid: true, 
+      isToAccountNumberValid: true,
       token: localStorage.getItem('authToken'), // Ensure you have the JWT token stored
     };
   },
@@ -196,15 +201,20 @@ export default {
         this.accounts = response.data.accounts; // Set accounts
         this.transactions = response.data.transactions; // Set transactions
         this.accountOptions = this.accounts.map(account => ({
-          value: account.id,
-          text: account.name,
-        })); // Set accountOptions
+          value: account.account_number, // Use account number as value
+          text: account.account_number, // Display account number
+        }));
       } catch (error) {
         console.error('Error fetching accounts and transactions:', error);
         this.showMessage('Error fetching accounts and transactions');
       }
     },
     async onSubmitAccount() {
+      this.validateCurrency();
+      if (!this.isCurrencyValid) {
+        this.showMessage('Please enter a valid currency symbol (e.g., € or $)');
+        return;
+      }
       try {
         const response = await axios.post(`${process.env.VUE_APP_ROOT_URL}/accounts`, this.createAccountForm, {
           headers: {
@@ -215,6 +225,7 @@ export default {
         this.showMessage('Account created successfully');
         this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
         this.createAccountForm = { name: '', currency: '', balance: '', country: '' }; // Reset form
+        this.isCurrencyValid = true;
         this.$refs.accountModal.hide(); // Hide the modal after account creation
       } catch (error) {
         console.error('Error creating account:', error);
@@ -238,7 +249,27 @@ export default {
         this.showMessage('Error updating account');
       }
     },
+    validateCurrency() {
+    const validCurrencySymbols = ['€', '$', '£', '¥', '₹']
+    this.isCurrencyValid = validCurrencySymbols.includes(this.createTransactionForm.currency.trim());
+    },
+    validateToAccountNumber() {
+      // Check if the input is numeric
+      this.isToAccountNumberValid = /^\d+$/.test(this.createTransactionForm.to_account_number.trim());
+    },
+
     async onSubmitTransaction() {
+      this.validateCurrency();
+      this.validateToAccountNumber();
+      if (!this.isCurrencyValid) {
+        this.showMessage('Please enter a valid currency symbol (e.g., € or $)');
+        return;
+      }
+      if (!this.isToAccountNumberValid) {
+      this.showMessage('To Account Number must be numeric');
+      return;
+    }
+
       try {
         const payload = {
           from_account_number: this.createTransactionForm.from_account_number,
@@ -254,7 +285,9 @@ export default {
         console.log('Transaction created:', response.data);
         this.showMessage('Transaction created successfully');
         this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
-        this.createTransactionForm = { from_account_number: '', to_account_number: '', amount: '', currency: '' }; // Reset form
+        this.createTransactionForm = { from_account_number: '', to_account_number: '', amount: '', currency: '' }; 
+        this.isCurrencyValid = true;
+        this.isToAccountNumberValid = true;
         this.$refs.transactionModal.hide(); // Hide the modal after transaction creation
       } catch (error) {
         console.error('Error creating transaction:', error.response ? error.response.data : error.message);
