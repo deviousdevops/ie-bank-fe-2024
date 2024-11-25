@@ -1,38 +1,38 @@
 <template>
   <div class="register-page">
-    <h2>Create Your Account</h2>
-    <p>Join the best bank in the world</p>
-    <div v-if="showAlert" :class="['alert', `alert-${alertVariant}`]">
-      {{ message }}
+    <div class="register-container">
+      <h2 class="text-center mb-4">Create Your Account</h2>
+      <p class="text-center mb-4">Join the best bank in the world</p>
+      <b-alert v-if="showAlert" :variant="alertVariant" show class="mb-4">{{ message }}</b-alert>
+      <b-form @submit.prevent="handleRegister" class="register-form">
+        <b-form-group label="Username" :state="usernameState" invalid-feedback="Username must be at least 6 characters long.">
+          <b-form-input v-model="username" required></b-form-input>
+        </b-form-group>
+        <b-form-group label="Email" :state="emailState" invalid-feedback="Please enter a valid email address.">
+          <b-form-input type="email" v-model="email" required></b-form-input>
+        </b-form-group>
+        <b-form-group label="Password" :state="passwordState" invalid-feedback="Password must contain letters and at least one number.">
+          <b-form-input type="password" v-model="password" required></b-form-input>
+        </b-form-group>
+        <b-form-group label="Confirm Password" :state="confirmPasswordState" invalid-feedback="Passwords do not match!">
+          <b-form-input type="password" v-model="confirmPassword" required></b-form-input>
+        </b-form-group>
+        <b-form-group label="Country">
+          <b-form-input v-model="country" required></b-form-input>
+        </b-form-group>
+        <b-form-group label="Date of Birth" :state="dobState" invalid-feedback="You must be at least 18 years old to register.">
+          <b-form-input type="date" v-model="date_of_birth" required></b-form-input>
+        </b-form-group>
+        <b-button type="submit" class="w-100 mt-3" variant="primary">Register</b-button>
+        <p class="text-center mt-4">
+          Already have an account?
+          <router-link to="/login" class="link">Log in here</router-link>
+        </p>
+      </b-form>
     </div>
-    <form @submit.prevent="handleRegister" class="register-form">
-      <label for="username">Username</label>
-      <input type="text" id="username" v-model="username" required />
-
-      <label for="email">Email</label>
-      <input type="email" id="email" v-model="email" required />
-
-      <label for="password">Password</label>
-      <input type="password" id="password" v-model="password" required />
-
-      <label for="confirmPassword">Confirm Password</label>
-      <input type="password" id="confirmPassword" v-model="confirmPassword" required />
-
-      <label for="country">Country</label>
-      <input type="text" id="country" v-model="country" required />
-
-      <label for="dob">Date of Birth</label>
-      <input type="date" id="dob" v-model="date_of_birth" required />
-
-      <button type="submit" class="submit-button">Register</button>
-
-      <p class="login-link">
-        Already have an account?
-        <router-link to="/login" class="link">Log in here</router-link>
-      </p>
-    </form>
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -52,61 +52,81 @@ export default {
       message: "",       // The alert message text
       alertVariant: "",  // The type of alert ("success", "danger", etc.)
       showAlert: false,
+      usernameState: null,
+      emailState: null,
+      passwordState: null,
+      confirmPasswordState: null,
+      dobState: null,
     };
   },
   methods: {
     handleRegister() {
+      let isValid = true;
+
+      // username check errors
       if (this.username.length < 6) {
-        this.showMessage("Username must be at least 6 characters long.", "danger");
-        return;
+        this.usernameState = false;
+        isValid = false;
+      } else {
+        this.usernameState = true;
       }
+
+      // email check errors
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(this.email)) {
-        this.showMessage("Please enter a valid email address.", "danger");
-        return;
+        this.emailState = false;
+        isValid = false;
+      } else {
+        this.emailState = true;
       }
-      if (this.password.length < 8) {
-        this.showMessage("Password must be at least 8 characters long.", "danger");
-        return;
-      }
+
+      // password check errors
       const passwordRegex = /^(?=.*[0-9])[a-zA-Z0-9]+$/;
-      if (!passwordRegex.test(this.password)) {
-        this.showMessage(
-          "Password must contain only letters and numbers and include at least one number.",
-          "danger"
-        );
-        return;
+      if (!passwordRegex.test(this.password) || this.password.length < 8) {
+        this.passwordState = false;
+        isValid = false;
+      } else {
+        this.passwordState = true;
       }
+
+      // confirm password
       if (this.password !== this.confirmPassword) {
-        this.showMessage("Passwords do not match!", "danger");
-        return;
+        this.confirmPasswordState = false;
+        isValid = false;
+      } else {
+        this.confirmPasswordState = true;
       }
+
+      // date of birth check errors
       const today = new Date();
       const birthDate = new Date(this.date_of_birth);
       const age = today.getFullYear() - birthDate.getFullYear();
-      const monthDifference = today.getMonth() - birthDate.getMonth();
-      if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
+      const monthDifference =
+        today.getMonth() - birthDate.getMonth() +
+        (today.getDate() < birthDate.getDate() ? -1 : 0);
+      if (isNaN(birthDate) || age < 18 || (age === 18 && monthDifference < 0)) {
+        this.dobState = false;
+        isValid = false;
+      } else {
+        this.dobState = true;
       }
-      if (isNaN(birthDate)) {
-        this.showMessage("Please enter a valid date of birth.", "danger");
-        return;
-      }
-      if (age < 18) {
-        this.showMessage("You must be at least 18 years old to register.", "danger");
-        return;
-      }
-      this.showMessage("Validation successful! Proceeding with registration.", "success");
 
-      // Call RESTregister to send the data to the backend
-      setTimeout(() => this.RESTregister(), 3000);
+      if (!isValid) {
+        this.showMessage('Please correct the highlighted fields.', 'danger');
+        return;
+      }
+
+      // Proceed with registration if all validations pass
+      this.showMessage('Validation successful! Registering...', 'success');
+      setTimeout(() => this.RESTregister(), 2000);
     },
+
+    // Show alert message
     showMessage(message, variant) {
       this.message = message;
       this.alertVariant = variant;
       this.showAlert = true;
 
-      // Hide alert after 3 seconds
       setTimeout(() => {
         this.showAlert = false;
       }, 3000);
@@ -128,13 +148,13 @@ export default {
       axios
         .post(path, payload) // Send POST request with the payload
         .then((response) => {
-          console.log("Registration successful:", response.data);
-          alert(`Welcome, ${response.data.username}! Registration successful.`);
+          console.log('Registration successful:', response.data);
+          this.showMessage('Registration successful! Redirecting...', 'success');
           this.$router.push("/login"); // Redirect to the login page
         })
         .catch((error) => {
-          console.error("Registration failed:", error.response?.data || error.message);
-          alert("Registration failed. Please check your details and try again.");
+          const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+          this.showMessage(errorMessage, 'danger');
         });
     },
   },
@@ -142,99 +162,49 @@ export default {
 </script>
 
 <style scoped>
+
+
 .register-page {
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-width: 100%;
-height: 100vh;
-background: linear-gradient(to bottom right, #0648d7, #2ea901);
-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #0648d7, #2ea901);
 }
 
-h2 {
-font-size: 48px;
-background-color: #ffffff;
--webkit-background-clip: text;
-background-clip: text;
--webkit-text-fill-color: transparent;
-color: transparent; /* Fallback for non-webkit browsers */
-}
-
-p {
-color: #e0e0e0;
-margin-bottom: 20px;
-}
-
-.register-form {
-display: flex;
-flex-direction: column;
-align-items: center;
-width: 300px;
-}
-
-label {
-align-self: flex-start;
-margin-bottom: 5px;
-color: #f0f0f0;
-}
-
-input {
-width: 100%;
-padding: 10px;
-margin-bottom: 15px;
-border-radius: 5px;
-border: none;
-}
-
-.submit-button {
-width: 100%;
-padding: 10px;
-background-color: #2ea901;
-color: white;
-font-size: 16px;
-font-weight: bold;
-border: none;
-border-radius: 5px;
-cursor: pointer;
-}
-
-.submit-button:hover {
-background-color: #0648d7;
-}
-
-.login-link {
-margin-top: 20px;
-color: #f0f0f0;
-}
-
-.link {
-color: #2ea901;
-text-decoration: underline;
-font-weight: bold;
-}
-
-.link:hover {
-color: #0648d7;
-}
-
-.alert {
-  padding: 10px 20px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  text-align: center;
-  width: 80%;
+.register-container {
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 90%;
   max-width: 500px;
 }
 
-.alert-success {
-  background-color: #4caf50;
-  color: white;
+.text-center {
+  text-align: center;
 }
 
-.alert-danger {
-  background-color: #f44336;
+h2.text-center {
   color: white;
+  font-size: 40x; /* Adjust size as needed */
+}
+
+p.text-center {
+  color: #e0e0e0;
+}
+
+.register-form {
+  margin-top: 20px;
+  color: #ffffff;
+}
+
+b-button {
+  background-color: #0648d7; /* Blue button */
+  border-color: #0648d7; /* Consistent border for the button */
+}
+
+.link {
+  color: #21d25c; /* Make login link blue */
 }
 </style>
+
