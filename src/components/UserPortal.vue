@@ -210,7 +210,7 @@ export default {
       }
     },
     async onSubmitAccount() {
-      this.validateCurrency();
+      this.validateCurrency('account'); // Validate the account creation currency
       if (!this.isCurrencyValid) {
         this.showMessage('Please enter a valid currency symbol (e.g., € or $)');
         return;
@@ -249,9 +249,13 @@ export default {
         this.showMessage('Error updating account');
       }
     },
-    validateCurrency() {
-    const validCurrencySymbols = ['€', '$', '£', '¥', '₹']
-    this.isCurrencyValid = validCurrencySymbols.includes(this.createTransactionForm.currency.trim());
+    validateCurrency(formType = 'account') {
+      const validCurrencySymbols = ['€', '$', '£', '¥', '₹']; // Add more symbols as needed
+      const currencyValue =
+        formType === 'account'
+          ? this.createAccountForm.currency.trim()
+          : this.createTransactionForm.currency.trim();
+      this.isCurrencyValid = validCurrencySymbols.includes(currencyValue);
     },
     validateToAccountNumber() {
       // Check if the input is numeric
@@ -259,7 +263,7 @@ export default {
     },
 
     async onSubmitTransaction() {
-      this.validateCurrency();
+      this.validateCurrency('transaction');
       this.validateToAccountNumber();
       if (!this.isCurrencyValid) {
         this.showMessage('Please enter a valid currency symbol (e.g., € or $)');
