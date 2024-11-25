@@ -102,11 +102,11 @@
         <b-form-group label="Currency">
           <b-form-input v-model="createTransactionForm.currency" placeholder="Enter currency (€ or $)" required></b-form-input>
         </b-form-group>
-        <b-form-group label="From Account">
-          <b-form-select v-model="createTransactionForm.from_account_id" :options="accountOptions" placeholder="Select source account" required></b-form-select>
+        <b-form-group label="From Account Number">
+          <b-form-input v-model="createTransactionForm.from_account_number" placeholder="Enter source account number" required></b-form-input>
         </b-form-group>
-        <b-form-group label="To Account">
-          <b-form-input v-model="createTransactionForm.to_account_id" placeholder="Enter recipient account" required></b-form-input>
+        <b-form-group label="To Account Number">
+          <b-form-input v-model="createTransactionForm.to_account_number" placeholder="Enter recipient account number" required></b-form-input>
         </b-form-group>
         <b-button type="submit" class="modal-submit-button" variant="success">Create Transaction</b-button>
       </b-form>
@@ -114,7 +114,7 @@
 
     <!-- Edit Account Modal -->
     <b-modal ref="editAccountModal" id="edit-account-modal" title="Edit Account" hide-footer>
-      <b-form @submit.prevent="onSubmitUpdate" class="modal-form">
+      <b-form @submit.prevent="onSubmitEditAccount" class="modal-form">
         <b-form-group label="Account Name">
           <b-form-input v-model="editAccountForm.name" placeholder="Enter new account name" required></b-form-input>
         </b-form-group>
@@ -125,264 +125,173 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios';
 
 export default {
   data() {
-  return {
-    accounts: [],
-    transactions: [],
-    createTransactionForm: {
-        amount: '',
-        currency: "",
-        from_account_id: "",
-        to_account_id: "",
-    },
-    createAccountForm: {
+    return {
+      editAccountForm: {
         name: '',
-        balance: '',
-        currency: '',
-        country: '',
-    },
-    editAccountForm: {
-      id: "",
-      name: "",
-    },
-    showMessage: false,
-    message: "",
-  };
-  },
-  computed: {
-  accountOptions() {
-    return this.accounts.map(account => ({
-      value: account.account_number,
-      text: `${account.name} (${account.account_number})`,
-      }));
-    },
-  },
-
-  methods: {
-    logout() {
-      localStorage.removeItem("authToken");
-      this.$router.push("/login");
-    },
-
-    // Ensure accounts are loaded before opening the transaction modal
-    openTransactionModal() {
-      if (!this.accounts || this.accounts.length === 0) {
-        this.message = "Please wait, accounts are still loading.";
-        this.showMessage = true;
-        setTimeout(() => (this.showMessage = false), 3000);
-        return;
-      }
-      this.$refs.transactionModal.show();
-    },
-    
-    //GET function
-    RESTgetAccountsandTransactions() {
-      const path = `${process.env.VUE_APP_ROOT_URL}/user_portal`;
-      axios
-        .get(path)
-        .then((response) => {
-          this.accounts = response.data.accounts;
-          this.transactions = response.data.transactions;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    },
-
-    // POST functions
-    RESTcreateAccount(payload) {
-      const path = `${process.env.VUE_APP_ROOT_URL}/accounts`;
-      axios
-        .post(path, payload)
-        .then((response) => {
-          this.RESTgetAccountsandTransactions();
-          this.message = "Account Created successfully!";
-          this.showMessage = true;
-          setTimeout(() => {
-            this.showMessage = false;
-          }, 3000);
-        })
-        .catch((error) => {
-          console.error(error);
-          this.RESTgetAccountsandTransactions();
-        });
-    },  
-
-    RESTcreateTransaction(payload) {
-      const path = `${process.env.VUE_APP_ROOT_URL}/transactions`;
-      axios
-        .post(path, payload)
-        .then((response) => {
-          this.RESTgetAccountsandTransactions();
-          this.message = "Transaction created successfully!";
-          this.showMessage = true;
-          setTimeout(() => {
-            this.showMessage = false;
-          }, 3000);
-        })
-        .catch((error) => {
-          console.error(error);
-          this.RESTgetAccountsandTransactions();
-        });
-    },
-
-    // PUT functions
-    RESTupdateAccount(payload, accountId) {
-      const path = `${process.env.VUE_APP_ROOT_URL}/accounts/${accountId}`;
-      axios
-        .put(path, payload)
-        .then(() => {
-          this.RESTgetAccountsandTransactions();
-          this.message = "Account Updated successfully!";
-          this.showMessage = true;
-          setTimeout(() => {
-            this.showMessage = false;
-          }, 3000);
-        })
-        .catch((error) => {
-          console.error(error);
-          this.RESTgetAccountsandTransactions();
-        });
-    },
-
-    // DELETE function
-    RESTdeleteAccount(accountId) {
-      const path = `${process.env.VUE_APP_ROOT_URL}/accounts/${accountId}`;
-      axios
-        .delete(path)
-        .then((response) => {
-          this.RESTgetAccounts();
-          this.message = "Account Deleted successfully!";
-          this.showMessage = true;
-          setTimeout(() => {
-            this.showMessage = false;
-          }, 3000);
-        })
-        .catch((error) => {
-          console.error(error);
-          this.RESTgetAccounts();
-        });
+        id: null,
       },
- 
-
-
-  /***************************************************
-    * FORM MANAGEMENT
-   **************************************************/
-
-    // Initialize forms empty
-    initCreateAccountForm() {
-      this.createAccountForm ={
-        name: "",
-        balance: 0,
-        currency: "",
-        country: "",
-      };
+      accounts: [], // Define accounts
+      transactions: [], // Define transactions
+      createAccountForm: { // Define createAccountForm
+        name: '',
+        currency: '',
+        balance: '', // Include balance
+        country: '',
+      },
+      createTransactionForm: { // Define createTransactionForm
+        from_account_number: '',
+        to_account_number: '',
+        amount: '',
+        currency: '', // Include currency
+      },
+      alertVariant: '', // Define alertVariant
+      message: '', // Define message
+      accountOptions: [], // Define accountOptions
+      token: localStorage.getItem('authToken'), // Ensure you have the JWT token stored
+    };
+  },
+  methods: {
+    async RESTupdateAccount(payload, id) {
+      try {
+        const response = await axios.put(`${process.env.VUE_APP_ROOT_URL}/accounts/${id}`, payload, {
+          headers: {
+            'x-access-token': this.token, // Use the stored token
+          },
+        });
+        console.log('Account updated:', response.data);
+        this.showMessage('Account updated successfully');
+        this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
+      } catch (error) {
+        console.error('Error updating account:', error);
+        this.showMessage('Error updating account');
+      }
     },
-
-    // Initialize transaction form
-    initTransactionForm() {
-      this.createTransactionForm = {
-        amount: 0,
-        currency: "",
-        from_account_id: "",
-        to_account_id: "",
-      };
+    async RESTdeleteAccount(id) {
+      try {
+        const response = await axios.delete(`${process.env.VUE_APP_ROOT_URL}/accounts/${id}`, {
+          headers: {
+            'x-access-token': this.token, // Use the stored token
+          },
+        });
+        console.log('Account deleted:', response.data);
+        this.showMessage('Account deleted successfully');
+        this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        this.showMessage('Error deleting account');
+      }
     },
-
-    initEditForm(){
+    async RESTgetAccountsandTransactions() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_ROOT_URL}/user_portal`, {
+          headers: {
+            'x-access-token': this.token, // Use the stored token
+          },
+        });
+        console.log('Accounts and transactions:', response.data);
+        this.accounts = response.data.accounts; // Set accounts
+        this.transactions = response.data.transactions; // Set transactions
+        this.accountOptions = this.accounts.map(account => ({
+          value: account.id,
+          text: account.name,
+        })); // Set accountOptions
+      } catch (error) {
+        console.error('Error fetching accounts and transactions:', error);
+        this.showMessage('Error fetching accounts and transactions');
+      }
+    },
+    async onSubmitAccount() {
+      try {
+        const response = await axios.post(`${process.env.VUE_APP_ROOT_URL}/accounts`, this.createAccountForm, {
+          headers: {
+            'x-access-token': this.token, // Use the stored token
+          },
+        });
+        console.log('Account created:', response.data);
+        this.showMessage('Account created successfully');
+        this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
+        this.createAccountForm = { name: '', currency: '', balance: '', country: '' }; // Reset form
+        this.$refs.accountModal.hide(); // Hide the modal after account creation
+      } catch (error) {
+        console.error('Error creating account:', error);
+        this.showMessage('Error creating account');
+      }
+    },
+    async onSubmitEditAccount() {
+      try {
+        const response = await axios.put(`${process.env.VUE_APP_ROOT_URL}/accounts/${this.editAccountForm.id}`, this.editAccountForm, {
+          headers: {
+            'x-access-token': this.token, // Use the stored token
+          },
+        });
+        console.log('Account updated:', response.data);
+        this.showMessage('Account updated successfully');
+        this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
+        this.initEditForm(); // Reset form
+        this.$refs.editAccountModal.hide(); // Hide the modal after account update
+      } catch (error) {
+        console.error('Error updating account:', error);
+        this.showMessage('Error updating account');
+      }
+    },
+    async onSubmitTransaction() {
+      try {
+        const payload = {
+          from_account_number: this.createTransactionForm.from_account_number,
+          to_account_number: this.createTransactionForm.to_account_number,
+          amount: parseFloat(this.createTransactionForm.amount), // Convert amount to float
+          currency: this.createTransactionForm.currency,
+        };
+        const response = await axios.post(`${process.env.VUE_APP_ROOT_URL}/transactions`, payload, {
+          headers: {
+            'x-access-token': this.token, // Use the stored token
+          },
+        });
+        console.log('Transaction created:', response.data);
+        this.showMessage('Transaction created successfully');
+        this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
+        this.createTransactionForm = { from_account_number: '', to_account_number: '', amount: '', currency: '' }; // Reset form
+        this.$refs.transactionModal.hide(); // Hide the modal after transaction creation
+      } catch (error) {
+        console.error('Error creating transaction:', error.response ? error.response.data : error.message);
+        this.showMessage('Error creating transaction');
+      }
+    },
+    initEditForm() {
       this.editAccountForm = {
-        name: "",
-        id: "",
+        name: '',
+        id: null,
       };
     },
-
-  // Handle submit event for creating a transaction
-  onSubmitTransaction(e) {
-    e.preventDefault();
-    if (this.createTransactionForm.amount <= 0) {
-      alert("Transaction amount must be positive.");
-      return;
-    }
-    if (this.createTransactionForm.from_account_id === this.createTransactionForm.to_account_id) {
-      alert("The source and destination accounts must be different.");
-      return;
-    }
-    const currencyRegex = /^[€$¥£₹₩₽]+$/; // Matches currency symbols
-    if (!currencyRegex.test(this.createTransactionForm.currency)) {
-      alert("Please enter a valid currency symbol (e.g., $, €, ¥, £).");
-      return;
-    }
-
-    this.$refs.TransactionModal.hide();
-    const payload = {
-      amount: this.createTransactionForm.amount,
-      currency: this.createTransactionForm.currency,
-      from_account_id: this.createTransactionForm.from_accout_id,
-      to_account_id: this.createTransactionForm.to_account_id,
-    };
-    this.RESTcreateTransaction(payload);
-    this.initTransactionForm();
-  },
-
-  // Handle submit event for creating an account
-  onSubmitAccount(e) {
-    e.preventDefault();
-    if (this.createAccountForm.balance < 0) {
-      alert("Balance must be a positive value.");
-      return;
-    }
-    const currencyRegex = /^[€$¥£₹₩₽]+$/; // Matches currency symbols
-    if (!currencyRegex.test(this.createAccountForm.currency)) {
-      alert("Please enter a valid currency symbol (e.g., $, €, ¥, £).");
-      return;
-    }
-    if (this.editAccountForm.name.length > 20) {
-      alert("Account name must not exceed 20 characters.");
-      return;
-    }
-
-
-    this.$refs.accountModal.hide();
-    const payload = {
-      name: this.createAccountForm.name,
-      balance: this.createAccountForm.balance,
-      currency: this.createAccountForm.currency,
-      country: this.createAccountForm.country,
-    };
-    this.RESTcreateAccount(payload);
-    this.initCreateAccountForm();
-  },
-
-  // Handle submit event for edit account
-  onSubmitUpdate(e) {
-      e.preventDefault();
-      this.$refs.editAccountModal.hide();
-      const payload = {
-        name: this.editAccountForm.name,
-      };
-      this.RESTupdateAccount(payload, this.editAccountForm.id);
-      this.initEditForm();
-    },
-
-    // Handle edit button
     editAccount(account) {
-      this.editAccountForm = account;
+      this.editAccountForm = { ...account };
     },
-
-    // Handle Delete button
-    deleteAccount(account) {
-      this.RESTdeleteAccount(account.id);
+    openUpdateAccountModal(account) {
+      this.editAccount(account);
+      this.$refs.editAccountModal.show();
     },
-
+    deleteAccount(id) {
+      this.RESTdeleteAccount(id);
+    },
+    logout() {
+      // Implement logout functionality
+      localStorage.removeItem('authToken');
+      this.$router.push('/login');
+    },
+    showMessage(message) {
+      // Implement showMessage functionality
+      alert(message);
+    },
+  },
   created() {
+    console.log('Created hook called');
     this.RESTgetAccountsandTransactions();
   },
-},
-}
+};
 </script>
 
 

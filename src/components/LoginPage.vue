@@ -53,18 +53,26 @@ export default {
         })
         .then((response) => {
           // Store user info and session data
-          localStorage.setItem("user", JSON.stringify(response.data));
+          localStorage.setItem("user", JSON.stringify(response.data.user));
           localStorage.setItem("isAuthenticated", "true");
-          localStorage.setItem("userRole", response.data.role || "user");
-          localStorage.setItem("userId", response.data.id);
+          localStorage.setItem("userRole", response.data.user.role || "user");
+          localStorage.setItem("userId", response.data.user.id);
+
+          // Store the auth token
+          if (response.data.token) {
+            localStorage.setItem("authToken", response.data.token);
+            console.log("Auth Token Stored:", response.data.token); // Log the stored token
+          } else {
+            console.error("Token not found in response");
+          }
 
           console.log("Login successful:", response.data);
 
           // Welcome message
-          alert(`Welcome back, ${response.data.username || username}!`);
+          alert(`Welcome back, ${response.data.user.username || username}!`);
 
           // Redirect based on role
-          if (response.data.role === "admin") {
+          if (response.data.user.role === "admin") {
             this.$router.push("/admin");
           } else {
             this.$router.push("/user");
