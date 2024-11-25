@@ -81,9 +81,10 @@ export default {
       editUserAccountForm: {
         id: "",
         username: "",
-        hashed_password: "",
+        password: "", // Change from hashed_password to password
         email: "",
         date_of_birth: "",
+        country: "", // Add country field
         status: "",
         role: "",
       },
@@ -100,9 +101,13 @@ export default {
 
     // POST function
     RESTcreateUserAccount(payload) {
-      const path = `${process.env.VUE_APP_ROOT_URL}/users`;
+      const path = `${process.env.VUE_APP_ROOT_URL}/admin/users`;
       axios
-        .post(path, payload)
+        .post(path, payload, {
+          headers: {
+            'x-access-token': localStorage.getItem('authToken')
+          }
+        })
         .then((response) => {
           this.RESTgetusers();
           this.message = "User Account Created Successfully!";
@@ -120,9 +125,13 @@ export default {
     // GET function
     RESTgetusers() {
       axios
-        .get(`${process.env.VUE_APP_ROOT_URL}/users`)
+        .get(`${process.env.VUE_APP_ROOT_URL}/admin_portal`, {
+          headers: {
+            'x-access-token': localStorage.getItem('authToken')
+          }
+        })
         .then((response) => {
-          this.useraccounts = response.data.useraccounts;
+          this.useraccounts = response.data.users;
         })
         .catch(error => {
           console.error(error);
@@ -131,9 +140,13 @@ export default {
 
     // PUT functions
     RESTupdateUserAccount(payload, userId) {
-      const path = `${process.env.VUE_APP_ROOT_URL}/useraccounts/${userId}`;
+      const path = `${process.env.VUE_APP_ROOT_URL}/admin/users/${userId}`;
       axios
-        .put(path, payload)
+        .put(path, payload, {
+          headers: {
+            'x-access-token': localStorage.getItem('authToken')
+          }
+        })
         .then(() => {
           this.RESTgetusers();
           this.message = "User Account Updated Successfully!";
@@ -150,9 +163,13 @@ export default {
 
     // DELETE function
     RESTdeleteUserAccount(userId) {
-      const path = `${process.env.VUE_APP_ROOT_URL}/useraccounts/${userId}`;
+      const path = `${process.env.VUE_APP_ROOT_URL}/admin/users/${userId}`;
       axios
-        .delete(path)
+        .delete(path, {
+          headers: {
+            'x-access-token': localStorage.getItem('authToken')
+          }
+        })
         .then(() => {
           this.RESTgetusers();
           this.message = "User Account Deleted Successfully!";
@@ -165,44 +182,36 @@ export default {
           console.error("Error Deleting Account", error);
           this.RESTgetusers();
         });
-      },
-    
+    },
 
-  /***************************************************
+    /***************************************************
     * FORM MANAGEMENT
-   **************************************************/
+    **************************************************/
       
-   initEditUserForm() {
-    this.editUserAccountForm = {
-      id: "",
-      username: "",
-      hashed_password: "",
-      email: "",
-      date_of_birth: "",
-      status: "",
-      role: "",
-    };
-  },
+    initEditUserForm() {
+      this.editUserAccountForm = {
+        id: "",
+        username: "",
+        password: "", // Change from hashed_password to password
+        email: "",
+        date_of_birth: "",
+        country: "", // Add country field
+        status: "",
+        role: "",
+      };
+    },
 
     // Open Create Modal
     openCreateModal() {
       this.isEditing = false; // Set to create mode
-      this.editUserAccountForm = {
-        id: "",
-        username: "",
-        hashed_password: "",
-        email: "",
-        date_of_birth: "",
-        status: "",
-        role: "",
-      }; // Clear the form
+      this.initEditUserForm(); // Clear the form
       this.$refs.userModal.show(); // Show the modal
     },
 
     // Open Update Modal
     openUpdateModal(user) {
       this.isEditing = true; // Set to edit mode
-      this.editUserAccountForm = { ...user }; // Populate the form with selected user data
+      this.editUserAccountForm = { ...user, password: "" }; // Populate the form with selected user data and clear password
       this.$refs.userModal.show(); // Show the modal
     },
 
