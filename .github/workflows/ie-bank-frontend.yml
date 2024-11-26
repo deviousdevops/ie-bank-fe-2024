@@ -103,4 +103,3 @@ jobs:
         with:
           app-name: ${{ env.FRONTEND_WEBAPP_UAT }}
           package: .
-
