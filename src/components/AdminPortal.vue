@@ -60,7 +60,7 @@
           <b-form-input id="status-input" placeholder="Enter user status (e.g., Active, Inactive)" v-model="editUserAccountForm.status" required></b-form-input>
         </b-form-group>
         <b-form-group label="Role" label-for="role-input">
-          <b-form-input id="role-input" v-model="editUserAccountForm.role" required></b-form-input>
+          <b-form-input id="role-input" placeholder="Enter user role (e.g, user, admin)" v-model="editUserAccountForm.role" required></b-form-input>
         </b-form-group>
         <b-button type="submit" class="modal-submit-button" variant="success">
           {{ isEditing ? 'Update User' : 'Create User' }}
