@@ -8,7 +8,7 @@
 /.env* @Zeidtayyan
 
 # Assign all workflow configuration files to a team
-/.github/workflows/* @ie-bank-fe-2024
+/.github/workflows/* @deviousdevops
 
 # Catch-all rule for everything else in the repository
-* @ie-bank-fe-2024
+* @deviousdevops
