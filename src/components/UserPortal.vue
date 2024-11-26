@@ -83,7 +83,7 @@
         <b-form-group label="Balance">
           <b-form-input type="number" v-model="createAccountForm.balance" placeholder="Enter positive balance" required></b-form-input>
         </b-form-group>
-        <b-form-group label="Currency" :state="isCurrencyValid" invalid-feedback="Currency must be a valid symbol (e.g., € or $)">
+        <b-form-group label="Currency" :state="isCurrencyValid" invalid-feedback="Currency must be a valid symbol (e.g., EUR, USD)">
           <b-form-input v-model="createAccountForm.currency" placeholder="Enter currency (EUR, USD)" @input="validateCurrency" required></b-form-input>
         </b-form-group>
         <b-form-group label="Country">
@@ -99,8 +99,8 @@
         <b-form-group label="Amount">
           <b-form-input type="number" v-model="createTransactionForm.amount" placeholder="Enter transaction amount" required></b-form-input>
         </b-form-group>
-        <b-form-group label="Currency" :state="isCurrencyValid" invalid-feedback="Currency must be a valid symbol (e.g., € or $)">
-          <b-form-input v-model="createTransactionForm.currency" placeholder="Enter currency (€ or $)" @input="validateCurrency" required></b-form-input>
+        <b-form-group label="Currency" :state="isCurrencyValid" invalid-feedback="Currency must be a valid symbol (e.g., EUR, USD)">
+          <b-form-input v-model="createTransactionForm.currency" placeholder="Enter currency (EUR, USD)" @input="validateCurrency" required></b-form-input>
         </b-form-group>
         <b-form-group label="From Account Number">
           <b-form-select v-model="createTransactionForm.from_account_number" :options="accountOptions" placeholder="Select an account number" required></b-form-select>
@@ -250,7 +250,7 @@ export default {
       }
     },
     validateCurrency(formType = 'account') {
-      const validCurrencyCodes = ['EUR', 'USD', 'GBP', 'JPY', 'INR'];
+      const validCurrencySymbols = ['EUR', 'USD', 'GBP', 'JPY', 'INR'];
       const currencyValue =
         formType === 'account'
           ? this.createAccountForm.currency.trim()
