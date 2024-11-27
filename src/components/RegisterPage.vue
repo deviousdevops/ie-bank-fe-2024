@@ -36,21 +36,22 @@
 
 <script>
 import axios from 'axios';
+import { trackEvent } from '../appInsights';
 
 export default {
   data() {
     return {
       id: '',
-      username: '', // User's username
-      email: '', // User's email
-      password: '', // User's password
-      confirmPassword: '', // User's password confirmation
-      country: '', // User's country
-      date_of_birth: '', // User's date of birth
-      role: '', // User's role
-      status: '', // User's status
-      message: "",       // The alert message text
-      alertVariant: "",  // The type of alert ("success", "danger", etc.)
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      country: '',
+      date_of_birth: '',
+      role: '',
+      status: '',
+      message: "",
+      alertVariant: "",
       showAlert: false,
       usernameState: null,
       emailState: null,
@@ -113,8 +114,22 @@ export default {
 
       if (!isValid) {
         this.showMessage('Please correct the highlighted fields.', 'danger');
+        // Log failed validation event
+        trackEvent('RegisterValidationFailed', {
+          username: this.username,
+          email: this.email,
+          country: this.country,
+          date_of_birth: this.date_of_birth,
+        });
         return;
       }
+      // Log successful validation event
+      trackEvent('RegisterValidationPassed', {
+        username: this.username,
+        email: this.email,
+        country: this.country,
+        date_of_birth: this.date_of_birth,
+      });
 
       // Proceed with registration if all validations pass
       this.showMessage('Validation successful! Registering...', 'success');
@@ -137,23 +152,43 @@ export default {
 
       // Prepare the payload with form data
       const payload = {
-        username: this.username, // User's name
-        email: this.email, // User's email
-        password: this.password, // User's password
-        country: this.country, // User's country
-        date_of_birth: this.date_of_birth, // User's date of birth
+        username: this.username,
+        email: this.email,
+        password: this.password,
+        country: this.country,
+        date_of_birth: this.date_of_birth,
       };
       console.log(payload)
 
+      // Log registration attempt
+      trackEvent('RegisterAttempt', {
+        username: this.username,
+        email: this.email,
+        country: this.country,
+      });
+
       axios
         .post(path, payload) // Send POST request with the payload
-        .then((response) => {
-          console.log('Registration successful:', response.data);
+        .then((response) => {  
+          // Log successful registration event
+          trackEvent('RegisterSuccess', {
+            username: this.username,
+            email: this.email,
+            country: this.country,
+          });
+
           this.showMessage('Registration successful! Redirecting...', 'success');
           this.$router.push("/login"); // Redirect to the login page
         })
         .catch((error) => {
           const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+          // Log registration error event
+          trackEvent('RegisterError', {
+            username: this.username,
+            email: this.email,
+            country: this.country,
+            errorMessage,
+          });
           this.showMessage(errorMessage, 'danger');
         });
     },
@@ -162,8 +197,6 @@ export default {
 </script>
 
 <style scoped>
-
-
 .register-page {
   display: flex;
   justify-content: center;
@@ -186,7 +219,7 @@ export default {
 
 h2.text-center {
   color: white;
-  font-size: 40x; /* Adjust size as needed */
+  font-size: 40x;
 }
 
 p.text-center {
@@ -199,12 +232,12 @@ p.text-center {
 }
 
 b-button {
-  background-color: #0648d7; /* Blue button */
-  border-color: #0648d7; /* Consistent border for the button */
+  background-color: #0648d7;
+  border-color: #0648d7;
 }
 
 .link {
-  color: #21d25c; /* Make login link blue */
+  color: #21d25c;
 }
 </style>
 

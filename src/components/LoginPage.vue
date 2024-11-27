@@ -21,6 +21,7 @@
 
 <script>
 import axios from "axios";
+import { trackEvent } from "../appInsights";
 
 export default {
   data() {
@@ -34,15 +35,21 @@ export default {
     login() {
       if (!this.username || !this.password) {
         alert("Please fill in both fields.");
+        // Log failed validation event
+        trackEvent("LoginValidationFailed", {
+          username: this.username,
+        });
         return;
       }
+      trackEvent("LoginValidationPassed", {username: this.username,});
       this.RESTlogin(this.username, this.password);
     },
 
-    // Login API method
+    // Login method
     RESTlogin(username, password) {
       const path = `${process.env.VUE_APP_ROOT_URL}/login`;
       const payload = { username, password };
+      trackEvent("LoginAttempt", { username });
 
       axios
         .post(path, payload, {
@@ -61,12 +68,16 @@ export default {
           // Store the auth token
           if (response.data.token) {
             localStorage.setItem("authToken", response.data.token);
-            console.log("Auth Token Stored:", response.data.token); // Log the stored token
+            trackEvent("AuthTokenStored", { token: response.data.token }); // Log the stored token
           } else {
-            console.error("Token not found in response");
+            trackEvent("AuthTokenNotFound", { error: "Token not found in response" });
           }
 
-          console.log("Login successful:", response.data);
+          // Log successful login event
+          trackEvent("LoginSuccess", {
+            username,
+            role: response.data.user.role || "user",
+          });
 
           // Welcome message
           alert(`Welcome back, ${response.data.user.username || username}!`);
@@ -79,13 +90,12 @@ export default {
           }
         })
         .catch((error) => {
-          console.error("Login failed:", error.response?.data || error.message);
           localStorage.clear(); // Clear any existing auth data
+          trackEvent("LoginError", {username, errorMessage: error.response?.data?.message || error.message,});
           alert("Login failed. Please check your credentials.");
         });
     },
   },
-  // Clear sensitive data when component is destroyed
   beforeDestroy() {
     this.username = '';
     this.password = '';

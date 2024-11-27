@@ -57,7 +57,7 @@
           <b-form-input id="dob-input" type="date" placeholder="Select date of birth" v-model="editUserAccountForm.date_of_birth" required></b-form-input>
         </b-form-group>
         <b-form-group label="Status" label-for="status-input">
-          <b-form-input id="status-input" placeholder="Enter user status (e.g., Active, Inactive)" v-model="editUserAccountForm.status" required></b-form-input>
+          <b-form-input id="status-input" placeholder="Enter user status (e.g., Active)" v-model="editUserAccountForm.status" required></b-form-input>
         </b-form-group>
         <b-form-group label="Role" label-for="role-input">
           <b-form-input id="role-input" placeholder="Enter user role (e.g, user, admin)" v-model="editUserAccountForm.role" required></b-form-input>
@@ -72,6 +72,8 @@
 
 <script>
 import axios from 'axios';
+import { trackEvent } from '../appInsights';
+
 export default {
   name: "AdminPortal",
   data() {
@@ -81,10 +83,10 @@ export default {
       editUserAccountForm: {
         id: "",
         username: "",
-        password: "", // Change from hashed_password to password
+        password: "",
         email: "",
         date_of_birth: "",
-        country: "", // Add country field
+        country: "",
         status: "",
         role: "",
       },
@@ -97,6 +99,7 @@ export default {
     logout() {
       localStorage.removeItem("authToken");
       this.$router.push("/login");
+      trackEvent("AdminLogout");
     },
 
     // POST function
@@ -115,10 +118,11 @@ export default {
           setTimeout(() => {
             this.showMessage = false;
           }, 3000);
+          trackEvent("UserAccountCreated", { username: payload.username, role: payload.role });
         })
         .catch(error => {
-          console.error("Error creating user:", error);
           this.RESTgetusers();
+          trackEvent("UserAccountCreationFailed", { username: payload.username, error: error.message });
         });
     },
 
@@ -132,9 +136,11 @@ export default {
         })
         .then((response) => {
           this.useraccounts = response.data.users;
+          trackEvent("UserAccountsFetched", { count: this.useraccounts.length });
         })
         .catch(error => {
-          console.error(error);
+
+          trackEvent("UserAccountsFetchFailed", { error: error.message });
         });
     },
 
@@ -154,10 +160,11 @@ export default {
           setTimeout(() => {
             this.showMessage = false;
           }, 3000);
+          trackEvent("UserAccountUpdated", { userId, changes: payload });
         })
         .catch((error) => {
-          console.error(error);
           this.RESTgetusers();
+          trackEvent("UserAccountUpdateFailed", { userId, error: error.message });
         });
     },
 
@@ -177,10 +184,11 @@ export default {
           setTimeout(() => {
             this.showMessage = false;
           }, 3000);
+          trackEvent("UserAccountDeleted", { userId });
         })
         .catch((error) => {
-          console.error("Error Deleting Account", error);
           this.RESTgetusers();
+          trackEvent("UserAccountDeleteFailed", { userId, error: error.message });
         });
     },
 
@@ -192,63 +200,60 @@ export default {
       this.editUserAccountForm = {
         id: "",
         username: "",
-        password: "", // Change from hashed_password to password
+        password: "",
         email: "",
         date_of_birth: "",
-        country: "", // Add country field
+        country: "",
         status: "",
         role: "",
       };
     },
 
-    // Open Create Modal
+    // Open Create or Update Modal
     openCreateModal() {
-      this.isEditing = false; // Set to create mode
-      this.initEditUserForm(); // Clear the form
-      this.$refs.userModal.show(); // Show the modal
+      this.isEditing = false;
+      this.initEditUserForm();
+      this.$refs.userModal.show();
+      trackEvent("CreateUserModalOpened");
     },
-
-    // Open Update Modal
     openUpdateModal(user) {
-      this.isEditing = true; // Set to edit mode
-      this.editUserAccountForm = { ...user, password: "" }; // Populate the form with selected user data and clear password
-      this.$refs.userModal.show(); // Show the modal
+      this.isEditing = true;
+      this.editUserAccountForm = { ...user, password: "" };
+      this.$refs.userModal.show(); 
+      trackEvent("UpdateUserModalOpened", { userId: user.id });
     },
 
-    // Submit Create
+    // Submit Create or Update
     onSubmitCreate() {
-      const payload = { ...this.editUserAccountForm }; // Prepare payload
-      delete payload.id; // Remove ID for creation
-      this.RESTcreateUserAccount(payload); // Call API
-      this.$refs.userModal.hide(); // Close modal
+      const payload = { ...this.editUserAccountForm };
+      delete payload.id;
+      this.RESTcreateUserAccount(payload);
+      this.$refs.userModal.hide();
     },
-
-    // Submit Update
     onSubmitUpdate() {
-      const payload = { ...this.editUserAccountForm }; // Prepare payload
-      this.RESTupdateUserAccount(payload, this.editUserAccountForm.id); // Call API
-      this.$refs.userModal.hide(); // Close modal
+      const payload = { ...this.editUserAccountForm };
+      this.RESTupdateUserAccount(payload, this.editUserAccountForm.id);
+      this.$refs.userModal.hide();
     },
 
     // Delete a user
     deleteUser(userId) {
-      this.RESTdeleteUserAccount(userId); // API call
+      this.RESTdeleteUserAccount(userId);
     },
   },
-
   created() {
     this.RESTgetusers();
+    trackEvent("AdminPortalVisited");
   },
 };
 </script>
-
 
 <style scoped>
 .header {
   display: flex;
   align-items: center;
-  justify-content: center; /* Center the Admin Portal title */
-  position: relative; /* Allow the Logout button to be absolutely positioned */
+  justify-content: center;
+  position: relative;
   margin-bottom: 20px;
 }
 
@@ -259,7 +264,7 @@ export default {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-align: center;
-  margin: 0; /* Remove any default margin */
+  margin: 0;
 }
 
 .logout-button {
@@ -279,22 +284,11 @@ export default {
   background-color: #a53b28;
 }
 
-.section-title {
-  font-size: 36px;
-  margin-top: 20px;
-  margin-bottom: 10px;
-  background: -webkit-linear-gradient(right, #0648d7, #2ea901);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-align: center; /* Center Users title */
-}
-
 .admin-portal {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background: linear-gradient(to bottom right, #8fd3e0, #8ed890); /* Light background */
+  background: linear-gradient(to bottom right, #8fd3e0, #8ed890);
   
 }
 
@@ -333,25 +327,15 @@ export default {
   padding: 10px;
 }
 
-.action-button {
-  background-color: #0648d7;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
 .action-button:hover {
   background-color: #2ea901;
 }
 
 .modal-form {
   padding: 20px;
-  background-color: #f8f9fa; /* Light gray background */
+  background-color: #f8f9fa;
   border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .modal-form b-form-group {
@@ -361,29 +345,29 @@ export default {
 .modal-form b-form-input,
 .modal-form b-form-select {
   border-radius: 5px;
-  border: 1px solid #ccc; /* Light border */
+  border: 1px solid #ccc;
   padding: 10px;
 }
 
 .modal-form b-form-input:focus,
 .modal-form b-form-select:focus {
-  border-color: #117b72; /* Matches button hover */
-  box-shadow: 0 0 5px rgba(17, 123, 114, 0.5); /* Subtle glow */
+  border-color: #117b72;
+  box-shadow: 0 0 5px rgba(17, 123, 114, 0.5);
 }
 
 .modal-submit-button {
-  width: 100%; /* Full-width button */
+  width: 100%;
   padding: 10px;
   font-size: 16px;
   border-radius: 5px;
-  background: linear-gradient(to bottom right, #379b92, #117b72); /* Gradient background */
+  background: linear-gradient(to bottom right, #379b92, #117b72);
   color: white;
   border: none;
-  transition: background-color 0.3s ease; /* Smooth hover effect */
+  transition: background-color 0.3s ease;
 }
 
 .modal-submit-button:hover {
-  background: linear-gradient(to bottom right, #2ea901, #0648d7); /* Change gradient on hover */
+  background: linear-gradient(to bottom right, #2ea901, #0648d7);
   color: white;
 }
 

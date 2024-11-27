@@ -1,12 +1,12 @@
 <template>
   <div class="user-portal">
-    <!-- Header Section -->
+    <!-- Header -->
     <div class="header">
       <h1 class="user-title">User Portal</h1>
       <button class="logout-button" @click="logout">Logout</button>
     </div>
 
-    <!-- Accounts Section -->
+    <!-- Accounts -->
     <h1 class="section-title">My Accounts</h1>
     <button class="btn-create" v-b-modal.account-modal>Create Account</button>
 
@@ -47,7 +47,7 @@
       </tbody>
     </table>
 
-    <!-- Transactions Section -->
+    <!-- Transactions -->
     <h1 class="section-title">Recent Transactions</h1>
     <button class="btn-create" v-b-modal.transaction-modal>Create Transaction</button>
 
@@ -114,7 +114,6 @@
       </b-form>
     </b-modal>
 
-
     <!-- Edit Account Modal -->
     <b-modal ref="editAccountModal" id="edit-account-modal" title="Edit Account" hide-footer>
       <b-form @submit.prevent="onSubmitEditAccount" class="modal-form">
@@ -129,6 +128,7 @@
 
 <script>
 import axios from 'axios';
+import { trackEvent } from '../appInsights';
 
 export default {
   data() {
@@ -137,59 +137,31 @@ export default {
         name: '',
         id: null,
       },
-      accounts: [], // Define accounts
-      transactions: [], // Define transactions
-      createAccountForm: { // Define createAccountForm
+      accounts: [],
+      transactions: [],
+      createAccountForm: {
         name: '',
         currency: '',
-        balance: '', // Include balance
+        balance: '',
         country: '',
       },
-      createTransactionForm: { // Define createTransactionForm
+      createTransactionForm: {
         from_account_number: '',
         to_account_number: '',
         amount: '',
-        currency: '', // Include currency
+        currency: '',
       },
-      alertVariant: '', // Define alertVariant
-      message: '', // Define message
-      accountOptions: [], // Define accountOptions
+      alertVariant: '',
+      message: '',
+      accountOptions: [],
       isCurrencyValid: true, 
       isToAccountNumberValid: true,
       token: localStorage.getItem('authToken'), // Ensure you have the JWT token stored
     };
   },
   methods: {
-    async RESTupdateAccount(payload, id) {
-      try {
-        const response = await axios.put(`${process.env.VUE_APP_ROOT_URL}/accounts/${id}`, payload, {
-          headers: {
-            'x-access-token': this.token, // Use the stored token
-          },
-        });
-        console.log('Account updated:', response.data);
-        this.showMessage('Account updated successfully');
-        this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
-      } catch (error) {
-        console.error('Error updating account:', error);
-        this.showMessage('Error updating account');
-      }
-    },
-    async RESTdeleteAccount(id) {
-      try {
-        const response = await axios.delete(`${process.env.VUE_APP_ROOT_URL}/accounts/${id}`, {
-          headers: {
-            'x-access-token': this.token, // Use the stored token
-          },
-        });
-        console.log('Account deleted:', response.data);
-        this.showMessage('Account deleted successfully');
-        this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
-      } catch (error) {
-        console.error('Error deleting account:', error);
-        this.showMessage('Error deleting account');
-      }
-    },
+
+    // GET FUNCTION to fetch the user accounts and transactions
     async RESTgetAccountsandTransactions() {
       try {
         const response = await axios.get(`${process.env.VUE_APP_ROOT_URL}/user_portal`, {
@@ -197,58 +169,20 @@ export default {
             'x-access-token': this.token, // Use the stored token
           },
         });
-        console.log('Accounts and transactions:', response.data);
-        this.accounts = response.data.accounts; // Set accounts
-        this.transactions = response.data.transactions; // Set transactions
+        this.accounts = response.data.accounts;
+        this.transactions = response.data.transactions;
         this.accountOptions = this.accounts.map(account => ({
-          value: account.account_number, // Use account number as value
-          text: account.account_number, // Display account number
+          value: account.account_number,
+          text: account.account_number,
         }));
+        trackEvent('AccountsAndTransactionsFetched', { accounts: this.accounts.length, transactions: this.transactions.length });
       } catch (error) {
-        console.error('Error fetching accounts and transactions:', error);
         this.showMessage('Error fetching accounts and transactions');
+        trackEvent('AccountsAndTransactionsFetchFailed', { error: error.message });
       }
     },
-    async onSubmitAccount() {
-      this.validateCurrency('account'); // Validate the account creation currency
-      if (!this.isCurrencyValid) {
-        this.showMessage('Please enter a valid currency symbol (e.g., EUR, USD)');
-        return;
-      }
-      try {
-        const response = await axios.post(`${process.env.VUE_APP_ROOT_URL}/accounts`, this.createAccountForm, {
-          headers: {
-            'x-access-token': this.token, // Use the stored token
-          },
-        });
-        console.log('Account created:', response.data);
-        this.showMessage('Account created successfully');
-        this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
-        this.createAccountForm = { name: '', currency: '', balance: '', country: '' }; // Reset form
-        this.isCurrencyValid = true;
-        this.$refs.accountModal.hide(); // Hide the modal after account creation
-      } catch (error) {
-        console.error('Error creating account:', error);
-        this.showMessage('Error creating account');
-      }
-    },
-    async onSubmitEditAccount() {
-      try {
-        const response = await axios.put(`${process.env.VUE_APP_ROOT_URL}/accounts/${this.editAccountForm.id}`, this.editAccountForm, {
-          headers: {
-            'x-access-token': this.token, // Use the stored token
-          },
-        });
-        console.log('Account updated:', response.data);
-        this.showMessage('Account updated successfully');
-        this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
-        this.initEditForm(); // Reset form
-        this.$refs.editAccountModal.hide(); // Hide the modal after account update
-      } catch (error) {
-        console.error('Error updating account:', error);
-        this.showMessage('Error updating account');
-      }
-    },
+
+    // Validation functions
     validateCurrency(formType = 'account') {
       const validCurrencySymbols = ['EUR', 'USD', 'GBP', 'JPY', 'INR'];
       const currencyValue =
@@ -258,11 +192,76 @@ export default {
       this.isCurrencyValid = validCurrencySymbols.includes(currencyValue);
     },
     validateToAccountNumber() {
-      // Check if the input is numeric
       this.isToAccountNumberValid = /^\d+$/.test(this.createTransactionForm.to_account_number.trim());
     },
 
+    // POST FUNCTION to create a new user account
+    async onSubmitAccount() {
+      this.validateCurrency('account');
+      if (!this.isCurrencyValid) {
+        this.showMessage('Please enter a valid currency symbol (e.g., EUR, USD)');
+        return;
+      }
+      try {
+        const response = await axios.post(`${process.env.VUE_APP_ROOT_URL}/accounts`, this.createAccountForm, {
+          headers: {
+            'x-access-token': this.token,
+          },
+        });
+        // Logs
+        this.showMessage('Account created successfully');
+        trackEvent('AccountCreated', { payload: this.createAccountForm });
+        this.RESTgetAccountsandTransactions();
+        // Reset form
+        this.createAccountForm = { name: '', currency: '', balance: '', country: '' };
+        this.isCurrencyValid = true;
+        this.$refs.accountModal.hide();
+      } catch (error) {
+        this.showMessage('Error creating account');
+        trackEvent('AccountCreationFailed', { payload: this.createAccountForm, error: error.message });
+      }
+    },
+
+    // PUT FUNCTION to update the user account
+    async onSubmitEditAccount() {
+      try {
+        const response = await axios.put(`${process.env.VUE_APP_ROOT_URL}/accounts/${this.editAccountForm.id}`, this.editAccountForm, {
+          headers: {
+            'x-access-token': this.token,
+          },
+        });
+        this.showMessage('Account updated successfully');
+        trackEvent('AccountEditSubmitted', { id: this.editAccountForm.id, payload: this.editAccountForm });
+        this.RESTgetAccountsandTransactions();
+        this.initEditForm(); 
+        this.$refs.editAccountModal.hide();
+      } catch (error) {
+        this.showMessage('Error updating account');
+        trackEvent('AccountEditFailed', { id: this.editAccountForm.id, error: error.message });
+      }
+    },
+    
+    // DELETE FUNCTION to delete the user account
+    async RESTdeleteAccount(id) {
+      try {
+        const response = await axios.delete(`${process.env.VUE_APP_ROOT_URL}/accounts/${id}`, {
+          headers: {
+            'x-access-token': this.token,
+          },
+        });
+
+        this.showMessage('Account deleted successfully');
+        trackEvent('AccountDeleted', { id });
+        this.RESTgetAccountsandTransactions();
+      } catch (error) {
+        this.showMessage('Error deleting account');
+        trackEvent('AccountDeleteFailed', { id, error: error.message });
+      }
+    },
+  
+    // POST FUNCTION to create a new transaction
     async onSubmitTransaction() {
+      // validate
       this.validateCurrency('transaction');
       this.validateToAccountNumber();
       if (!this.isCurrencyValid) {
@@ -273,31 +272,33 @@ export default {
       this.showMessage('To Account Number must be numeric');
       return;
     }
-
       try {
         const payload = {
           from_account_number: this.createTransactionForm.from_account_number,
           to_account_number: this.createTransactionForm.to_account_number,
-          amount: parseFloat(this.createTransactionForm.amount), // Convert amount to float
+          amount: parseFloat(this.createTransactionForm.amount),
           currency: this.createTransactionForm.currency,
         };
         const response = await axios.post(`${process.env.VUE_APP_ROOT_URL}/transactions`, payload, {
           headers: {
-            'x-access-token': this.token, // Use the stored token
+            'x-access-token': this.token,
           },
         });
-        console.log('Transaction created:', response.data);
+        // Logs
         this.showMessage('Transaction created successfully');
-        this.RESTgetAccountsandTransactions(); // Refresh accounts and transactions
+        trackEvent('TransactionCreated', { payload });
+        // Refresh and reset
+        this.RESTgetAccountsandTransactions();
         this.createTransactionForm = { from_account_number: '', to_account_number: '', amount: '', currency: '' }; 
         this.isCurrencyValid = true;
         this.isToAccountNumberValid = true;
-        this.$refs.transactionModal.hide(); // Hide the modal after transaction creation
+        this.$refs.transactionModal.hide();
       } catch (error) {
-        console.error('Error creating transaction:', error.response ? error.response.data : error.message);
         this.showMessage('Error creating transaction');
+        trackEvent('TransactionCreationFailed', { payload, error: error.message });
       }
     },
+
     initEditForm() {
       this.editAccountForm = {
         name: '',
@@ -311,44 +312,39 @@ export default {
       this.editAccount(account);
       this.$refs.editAccountModal.show();
     },
+
     deleteAccount(id) {
       this.RESTdeleteAccount(id);
     },
+
     logout() {
-      // Implement logout functionality
       localStorage.removeItem('authToken');
       this.$router.push('/login');
+      trackEvent("UserLogout");
     },
+
     showMessage(message) {
-      // Implement showMessage functionality
       alert(message);
     },
+
   },
   created() {
-    console.log('Created hook called');
     this.RESTgetAccountsandTransactions();
+    trackEvent('UserPortalVisited', { user: localStorage.getItem('userId') });
   },
 };
 </script>
 
-
 <style scoped>
-/* Add your styles here */
-
-.btn-block {
-  width: 100%;
-  margin-bottom: 15px;
-}
-
 .user-portal {
   background: linear-gradient(to bottom right, #8fd3e0, #8ed890);
   padding: 20px;
-  color: black; /* Ensure text is black */
+  color: black;
 }
 .header {
   display: flex;
   align-items: center;
-  justify-content: center; /* Center the title and button horizontally */
+  justify-content: center;
   margin-bottom: 20px;
   position: relative;
 }
@@ -377,7 +373,6 @@ export default {
 .section-title {
   font-size: 36px;
   margin-top: 20px;
-
 }
 
 .account-table,
@@ -396,7 +391,7 @@ export default {
 .table td {
   border: 1px solid #ddd;
   padding: 10px;
-  color: black; /* Ensure text in tables is black */
+  color: black;
 }
 
 .btn-primary {
@@ -410,26 +405,26 @@ export default {
 
 .btn-create:hover {
   background: linear-gradient(to bottom right, #379b92, #117b72);
-  color: white; /* Ensures the text stays visible */
-  border-color: #3cba54; /* Matches the button color */
+  color: white;
+  border-color: #3cba54;
 }
 
 .btn-create {
-  background-color: #117b72; /* Original green color */
+  background-color: #117b72;
   color: white;
-  border: none; /* Removes any default border */
+  border: none;
   font-size: 16px;
   padding: 10px 20px;
   cursor: pointer;
-  width: 100%; /* Full width for the button */
-  margin-bottom: 15px; /* Space below the button */
-  border-radius: 5px; /* Rounded corners */
-  transition: background-color 0.3s ease; /* Smooth transition for the hover effect */
+  width: 100%;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
 }
 
 .modal-form {
   padding: 20px;
-  background-color: #f8f9fa; /* Light gray background */
+  background-color: #f8f9fa;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -441,14 +436,14 @@ export default {
 .modal-form b-form-input,
 .modal-form b-form-select {
   border-radius: 5px;
-  border: 1px solid #ccc; /* Light border */
+  border: 1px solid #ccc;
   padding: 10px;
 }
 
 .modal-form b-form-input:focus,
 .modal-form b-form-select:focus {
-  border-color: #117b72; /* Matches button hover */
-  box-shadow: 0 0 5px rgba(17, 123, 114, 0.5); /* Subtle glow */
+  border-color: #117b72;
+  box-shadow: 0 0 5px rgba(17, 123, 114, 0.5);
 }
 
 .modal-submit-button {
