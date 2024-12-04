@@ -165,6 +165,10 @@
 
 <script>
 import axios from "axios";
+
+axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+
 export default {
   name: "AppAccounts",
   data() {
@@ -205,20 +209,25 @@ export default {
     RESTcreateAccount(payload) {
       const path = `${process.env.VUE_APP_ROOT_URL}/accounts`;
       axios
-        .post(path, payload)
+        .post(path, payload, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
         .then((response) => {
           this.RESTgetAccounts();
-          // For message alert
-          this.message = "Account Created succesfully!";
-          // To actually show the message
+          this.message = "Account Created successfully!";
           this.showMessage = true;
-          // To hide the message after 3 seconds
           setTimeout(() => {
             this.showMessage = false;
           }, 3000);
         })
         .catch((error) => {
-          console.error(error);
+          console.error('Create account error:', error);
+          if (error.response && error.response.status === 401) {
+            this.$router.push('/login');
+          }
           this.RESTgetAccounts();
         });
     },
@@ -230,11 +239,8 @@ export default {
         .put(path, payload)
         .then((response) => {
           this.RESTgetAccounts();
-          // For message alert
           this.message = "Account Updated succesfully!";
-          // To actually show the message
           this.showMessage = true;
-          // To hide the message after 3 seconds
           setTimeout(() => {
             this.showMessage = false;
           }, 3000);
@@ -252,11 +258,8 @@ export default {
         .delete(path)
         .then((response) => {
           this.RESTgetAccounts();
-          // For message alert
           this.message = "Account Deleted succesfully!";
-          // To actually show the message
           this.showMessage = true;
-          // To hide the message after 3 seconds
           setTimeout(() => {
             this.showMessage = false;
           }, 3000);
@@ -312,6 +315,26 @@ export default {
     // Handle Delete button
     deleteAccount(account) {
       this.RESTdeleteAccount(account.id);
+    },
+
+    async login(credentials) {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_ROOT_URL}/login`,
+          credentials,
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+        console.log('Login response:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
     },
   },
 
