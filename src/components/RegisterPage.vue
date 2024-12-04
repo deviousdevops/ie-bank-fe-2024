@@ -158,7 +158,7 @@ export default {
         country: this.country,
         date_of_birth: this.date_of_birth,
       };
-      console.log(payload)
+
 
       // Log registration attempt
       trackEvent('RegisterAttempt', {

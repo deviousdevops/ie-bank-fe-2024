@@ -6,7 +6,6 @@ import { initializeAppInsights } from './appInsights';
 
 // Safely access the environment variable
 const appInsightsKey = process.env.VUE_APP_APP_INSIGHTS_KEY;
-console.log('App Insights Key:', appInsightsKey);
 
 //install bootstrap first
 import 'bootstrap/dist/css/bootstrap.css'
