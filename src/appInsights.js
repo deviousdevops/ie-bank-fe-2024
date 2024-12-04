@@ -5,7 +5,7 @@ let appInsights = null;
 export const initializeAppInsights = () => {
     appInsights = new ApplicationInsights({
         config: {
-            instrumentationKey: process.env.VUE_APP_APP_INSIGHTS_KEY,
+            connectionString: process.env.VUE_APP_APP_INSIGHTS_CONNECTION_STRING,
             enableAutoRouteTracking: true,
             disableFetchTracking: false,
             disableAjaxTracking: false
