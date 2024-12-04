@@ -48,7 +48,7 @@
           <b-form-input id="username-input" placeholder="Enter username" v-model="editUserAccountForm.username" required></b-form-input>
         </b-form-group>
         <b-form-group label="Password" label-for="password-input">
-          <b-form-input id="password-input" type="password" placeholder="Enter password" v-model="editUserAccountForm.password" required></b-form-input>
+          <b-form-input id="password-input" type="password" placeholder="Enter password" v-model="editUserAccountForm.password" :required="!isEditing"></b-form-input>
         </b-form-group>
         <b-form-group label="Email" label-for="email-input">
           <b-form-input id="email-input" type="email" placeholder="Enter email address" v-model="editUserAccountForm.email" required></b-form-input>
@@ -218,7 +218,8 @@ export default {
     },
     openUpdateModal(user) {
       this.isEditing = true;
-      this.editUserAccountForm = { ...user, password: "" };
+      const formattedDate = new Date(user.date_of_birth).toISOString().split('T')[0];
+      this.editUserAccountForm = { ...user, date_of_birth: formattedDate, password: "" };
       this.$refs.userModal.show(); 
       trackEvent("UpdateUserModalOpened", { userId: user.id });
     },
@@ -232,6 +233,9 @@ export default {
     },
     onSubmitUpdate() {
       const payload = { ...this.editUserAccountForm };
+      if (!payload.password) {
+      delete payload.password;
+      }
       this.RESTupdateUserAccount(payload, this.editUserAccountForm.id);
       this.$refs.userModal.hide();
     },
