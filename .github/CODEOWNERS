@@ -1,5 +1,5 @@
 # Assign all .vue files to the frontend team
-*.vue @ie-bank-fe-2024
+*.vue @Zeidtayyan
 
 # Assign CSS files to the UI team
 *.css @Zeidtayyan
