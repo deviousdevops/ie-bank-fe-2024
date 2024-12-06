@@ -1,14 +1,5 @@
-# Assign responsibility for all JavaScript/TypeScript files to a specific user
-/src/**/*.js @Zeidtayyan
+# Assign all .vue files to the frontend team
+*.vue @ie-bank-fe-2024
 
-# Assign responsibility for the frontend configuration files to another user
-/package.json @Zeidtayyan
-
-# Assign responsibility for .env files to a specific user
-/.env* @Zeidtayyan
-
-# Assign all workflow configuration files to a team
-/.github/workflows/* @deviousdevops
-
-# Catch-all rule for everything else in the repository
-* @deviousdevops
+# Assign CSS files to the UI team
+*.css @Zeidtayyan
