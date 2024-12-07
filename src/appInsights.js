@@ -1,12 +1,12 @@
-/*
 import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 
 let appInsights = null;
 
 export const initializeAppInsights = () => {
+    const instrumentationKey = process.env.VUE_APP_APPINSIGHTS_CONNECTION_STRING;
     appInsights = new ApplicationInsights({
         config: {
-            connectionString: process.env.VUE_APP_APP_INSIGHTS_CONNECTION_STRING,
+            instrumentationKey: instrumentationKey,
             enableAutoRouteTracking: true,
             disableFetchTracking: false,
             disableAjaxTracking: false
@@ -26,4 +26,3 @@ export const trackError = (error) => {
         appInsights.trackException({ exception: error });
     }
 };
-*/

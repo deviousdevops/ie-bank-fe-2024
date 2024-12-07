@@ -21,7 +21,7 @@
 
 <script>
 import axios from "axios";
-// import { trackEvent } from "../appInsights";
+import { trackEvent } from "../appInsights";
 
 export default {
   data() {
@@ -36,27 +36,20 @@ export default {
       if (!this.username || !this.password) {
         alert("Please fill in both fields.");
         // Log failed validation event
-        console.error("Login validation failed: Please fill in both fields.");
-        /*
         trackEvent("LoginValidationFailed", {
           username: this.username,
         });
-        */
         return;
       }
-      console.log("Login validation passed");
-      
-      //trackEvent("LoginValidationPassed", {username: this.username,});
+      trackEvent("LoginValidationPassed", {username: this.username,});
       this.RESTlogin(this.username, this.password);
-  
     },
 
     // Login method
     RESTlogin(username, password) {
       const path = `${process.env.VUE_APP_ROOT_URL}/login`;
       const payload = { username, password };
-      console.log("Attempting login with payload: ", payload);
-      //trackEvent("LoginAttempt", { username });
+      trackEvent("LoginAttempt", { username });
 
       axios
         .post(path, payload, {
@@ -75,24 +68,16 @@ export default {
           // Store the auth token
           if (response.data.token) {
             localStorage.setItem("authToken", response.data.token);
-            console.log("Token stored: ", response.data.token);
-            //trackEvent("AuthTokenStored", { token: response.data.token }); // Log the stored token
+            trackEvent("AuthTokenStored", { token: response.data.token }); // Log the stored token
           } else {
-            console.error("Token not found in response");
-            //trackEvent("AuthTokenNotFound", { error: "Token not found in response" });
+            trackEvent("AuthTokenNotFound", { error: "Token not found in response" });
           }
 
           // Log successful login event
-          console.log("LoginSuccess", {
-            username,
-            role: response.data.user.role || "user",
-          });
-          /*
           trackEvent("LoginSuccess", {
             username,
             role: response.data.user.role || "user",
           });
-          */
 
           // Welcome message
           alert(`Welcome back, ${response.data.user.username || username}!`);
@@ -106,9 +91,7 @@ export default {
         })
         .catch((error) => {
           localStorage.clear(); // Clear any existing auth data
-          console.error("Login failed: ", error.response?.data?.message || error.message);
-          
-          //trackEvent("LoginError", {username, errorMessage: error.response?.data?.message || error.message,});
+          trackEvent("LoginError", {username, errorMessage: error.response?.data?.message || error.message,});
           alert("Login failed. Please check your credentials.");
         });
     },

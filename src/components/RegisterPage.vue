@@ -36,7 +36,7 @@
 
 <script>
 import axios from 'axios';
-//import { trackEvent } from '../appInsights';
+import { trackEvent } from '../appInsights';
 
 export default {
   data() {
@@ -115,35 +115,21 @@ export default {
       if (!isValid) {
         this.showMessage('Please correct the highlighted fields.', 'danger');
         // Log failed validation event
-        console.log('RegisterValidationFailed', {
+        trackEvent('RegisterValidationFailed', {
           username: this.username,
           email: this.email,
           country: this.country,
           date_of_birth: this.date_of_birth,
         });
-        /*trackEvent('RegisterValidationFailed', {
-          username: this.username,
-          email: this.email,
-          country: this.country,
-          date_of_birth: this.date_of_birth,
-        });
-        */
         return;
       }
       // Log successful validation event
-      console.log('RegisterValidationPassed', {
+      trackEvent('RegisterValidationPassed', {
         username: this.username,
         email: this.email,
         country: this.country,
         date_of_birth: this.date_of_birth,
       });
-      /*trackEvent('RegisterValidationPassed', {
-        username: this.username,
-        email: this.email,
-        country: this.country,
-        date_of_birth: this.date_of_birth,
-      });
-      */
 
       // Proceed with registration if all validations pass
       this.showMessage('Validation successful! Registering...', 'success');
@@ -175,35 +161,21 @@ export default {
 
 
       // Log registration attempt
-      console.log('RegisterAttempt', {
-        username: this.username,
-        email: this.email,
-        country: this.country,
-      });
-      /*
       trackEvent('RegisterAttempt', {
         username: this.username,
         email: this.email,
         country: this.country,
       });
-      */
 
       axios
         .post(path, payload) // Send POST request with the payload
         .then((response) => {  
           // Log successful registration event
-          console.log('RegisterSuccess', {
-            username: this.username,
-            email: this.email,
-            country: this.country,
-          });
-          /*
           trackEvent('RegisterSuccess', {
             username: this.username,
             email: this.email,
             country: this.country,
           });
-          */
 
           this.showMessage('Registration successful! Redirecting...', 'success');
           this.$router.push("/login"); // Redirect to the login page
@@ -211,20 +183,12 @@ export default {
         .catch((error) => {
           const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
           // Log registration error event
-          console.log('RegisterError', {
-            username: this.username,
-            email: this.email,
-            country: this.country,
-            errorMessage,
-          });
-          /*
           trackEvent('RegisterError', {
             username: this.username,
             email: this.email,
             country: this.country,
             errorMessage,
           });
-          */
           this.showMessage(errorMessage, 'danger');
         });
     },
@@ -276,4 +240,3 @@ b-button {
   color: #21d25c;
 }
 </style>
-

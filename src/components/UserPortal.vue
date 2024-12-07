@@ -128,7 +128,7 @@
 
 <script>
 import axios from 'axios';
-// import { trackEvent } from '../appInsights';
+import { trackEvent } from '../appInsights';
 
 export default {
   data() {
@@ -175,12 +175,10 @@ export default {
           value: account.account_number,
           text: account.account_number,
         }));
-        console.log('Accounts and transactions fetched successfully');
-        // trackEvent('AccountsAndTransactionsFetched', { accounts: this.accounts.length, transactions: this.transactions.length });
+        trackEvent('AccountsAndTransactionsFetched', { accounts: this.accounts.length, transactions: this.transactions.length });
       } catch (error) {
-        console.error('Error fetching accounts and transactions', error.message);
         this.showMessage('Error fetching accounts and transactions');
-        // trackEvent('AccountsAndTransactionsFetchFailed', { error: error.message });
+        trackEvent('AccountsAndTransactionsFetchFailed', { error: error.message });
       }
     },
 
@@ -211,9 +209,8 @@ export default {
           },
         });
         // Logs
-        console.log('Account created successfully', response.data);
         this.showMessage('Account created successfully');
-        // trackEvent('AccountCreated', { payload: this.createAccountForm });
+        trackEvent('AccountCreated', { payload: this.createAccountForm });
         this.RESTgetAccountsandTransactions();
         // Reset form
         this.createAccountForm = { name: '', currency: '', balance: '', country: '' };
@@ -221,8 +218,7 @@ export default {
         this.$refs.accountModal.hide();
       } catch (error) {
         this.showMessage('Error creating account');
-        console.error('Error creating account', error.message);
-        // trackEvent('AccountCreationFailed', { payload: this.createAccountForm, error: error.message });
+        trackEvent('AccountCreationFailed', { payload: this.createAccountForm, error: error.message });
       }
     },
 
@@ -235,14 +231,13 @@ export default {
           },
         });
         this.showMessage('Account updated successfully');
-        console.log('Account updated successfully', response.data);
-        // trackEvent('AccountEditSubmitted', { id: this.editAccountForm.id, payload: this.editAccountForm });
+        trackEvent('AccountEditSubmitted', { id: this.editAccountForm.id, payload: this.editAccountForm });
         this.RESTgetAccountsandTransactions();
         this.initEditForm(); 
         this.$refs.editAccountModal.hide();
       } catch (error) {
         this.showMessage('Error updating account');
-        // trackEvent('AccountEditFailed', { id: this.editAccountForm.id, error: error.message });
+        trackEvent('AccountEditFailed', { id: this.editAccountForm.id, error: error.message });
       }
     },
     
@@ -256,13 +251,11 @@ export default {
         });
 
         this.showMessage('Account deleted successfully');
-        console.log('Account deleted successfully', response.data);
-        //trackEvent('AccountDeleted', { id });
+        trackEvent('AccountDeleted', { id });
         this.RESTgetAccountsandTransactions();
       } catch (error) {
         this.showMessage('Error deleting account');
-        console.error('Error deleting account', error.message);
-        //trackEvent('AccountDeleteFailed', { id, error: error.message });
+        trackEvent('AccountDeleteFailed', { id, error: error.message });
       }
     },
   
@@ -293,8 +286,7 @@ export default {
         });
         // Logs
         this.showMessage('Transaction created successfully');
-        console.log('Transaction created successfully', response.data);
-        //trackEvent('TransactionCreated', { payload });
+        trackEvent('TransactionCreated', { payload });
         // Refresh and reset
         this.RESTgetAccountsandTransactions();
         this.createTransactionForm = { from_account_number: '', to_account_number: '', amount: '', currency: '' }; 
@@ -303,8 +295,7 @@ export default {
         this.$refs.transactionModal.hide();
       } catch (error) {
         this.showMessage('Error creating transaction');
-        console.error('Error creating transaction', error.message);
-        //trackEvent('TransactionCreationFailed', { payload, error: error.message });
+        trackEvent('TransactionCreationFailed', { payload, error: error.message });
       }
     },
 
@@ -329,7 +320,7 @@ export default {
     logout() {
       localStorage.removeItem('authToken');
       this.$router.push('/login');
-      //trackEvent("UserLogout");
+      trackEvent("UserLogout");
     },
 
     showMessage(message) {
@@ -339,8 +330,7 @@ export default {
   },
   created() {
     this.RESTgetAccountsandTransactions();
-    console.log('User Portal visited');
-    //trackEvent('UserPortalVisited', { user: localStorage.getItem('userId') });
+    trackEvent('UserPortalVisited', { user: localStorage.getItem('userId') });
   },
 };
 </script>

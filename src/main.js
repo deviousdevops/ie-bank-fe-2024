@@ -2,9 +2,9 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import axios from 'axios'
-// import { initializeAppInsights } from './appInsights';
+import { initializeAppInsights } from './appInsights';
 
-//initializeAppInsights();
+initializeAppInsights();
 
 //install bootstrap first
 import 'bootstrap/dist/css/bootstrap.css'
