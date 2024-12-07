@@ -45,10 +45,10 @@ export default {
         return;
       }
       console.log("Login validation passed");
-      /*
-      trackEvent("LoginValidationPassed", {username: this.username,});
+      
+      //trackEvent("LoginValidationPassed", {username: this.username,});
       this.RESTlogin(this.username, this.password);
-      */
+  
     },
 
     // Login method
