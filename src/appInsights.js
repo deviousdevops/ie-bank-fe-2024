@@ -1,3 +1,4 @@
+/*
 import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 
 let appInsights = null;
@@ -25,3 +26,4 @@ export const trackError = (error) => {
         appInsights.trackException({ exception: error });
     }
 };
+*/

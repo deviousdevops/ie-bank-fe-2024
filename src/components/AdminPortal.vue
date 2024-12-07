@@ -72,7 +72,7 @@
 
 <script>
 import axios from 'axios';
-import { trackEvent } from '../appInsights';
+//import { trackEvent } from '../appInsights';
 
 export default {
   name: "AdminPortal",
@@ -98,8 +98,9 @@ export default {
   methods: {
     logout() {
       localStorage.removeItem("authToken");
-      this.$router.push("/login");
-      trackEvent("AdminLogout");
+      this.$router.push("/login");c
+      console.log("Admin logged out");
+      //trackEvent("AdminLogout");
     },
 
     // POST function
@@ -118,11 +119,13 @@ export default {
           setTimeout(() => {
             this.showMessage = false;
           }, 3000);
-          trackEvent("UserAccountCreated", { username: payload.username, role: payload.role });
+          console.log("User Account Created Successfully!");
+          //trackEvent("UserAccountCreated", { username: payload.username, role: payload.role });
         })
         .catch(error => {
           this.RESTgetusers();
-          trackEvent("UserAccountCreationFailed", { username: payload.username, error: error.message });
+          console.error("User Account Creation Failed: ", error.message);
+          //trackEvent("UserAccountCreationFailed", { username: payload.username, error: error.message });
         });
     },
 
@@ -136,11 +139,13 @@ export default {
         })
         .then((response) => {
           this.useraccounts = response.data.users;
-          trackEvent("UserAccountsFetched", { count: this.useraccounts.length });
+          console.log("User Accounts Fetched: ", this.useraccounts);
+          //trackEvent("UserAccountsFetched", { count: this.useraccounts.length });
         })
         .catch(error => {
+          console.error("User Accounts Fetch Failed: ", error.message);
 
-          trackEvent("UserAccountsFetchFailed", { error: error.message });
+          //trackEvent("UserAccountsFetchFailed", { error: error.message });
         });
     },
 
@@ -160,11 +165,13 @@ export default {
           setTimeout(() => {
             this.showMessage = false;
           }, 3000);
-          trackEvent("UserAccountUpdated", { userId, changes: payload });
+          console.log("User Account Updated Successfully!");
+          //trackEvent("UserAccountUpdated", { userId, changes: payload });
         })
         .catch((error) => {
           this.RESTgetusers();
-          trackEvent("UserAccountUpdateFailed", { userId, error: error.message });
+          console.error("User Account Update Failed: ", error.message);
+          //trackEvent("UserAccountUpdateFailed", { userId, error: error.message });
         });
     },
 
@@ -184,11 +191,13 @@ export default {
           setTimeout(() => {
             this.showMessage = false;
           }, 3000);
-          trackEvent("UserAccountDeleted", { userId });
+          console.log("User Account Deleted Successfully!");
+          //trackEvent("UserAccountDeleted", { userId });
         })
         .catch((error) => {
           this.RESTgetusers();
-          trackEvent("UserAccountDeleteFailed", { userId, error: error.message });
+          console.error("User Account Delete Failed: ", error.message);
+          //trackEvent("UserAccountDeleteFailed", { userId, error: error.message });
         });
     },
 
@@ -214,14 +223,16 @@ export default {
       this.isEditing = false;
       this.initEditUserForm();
       this.$refs.userModal.show();
-      trackEvent("CreateUserModalOpened");
+      console.log("Create User Modal Opened");
+      //trackEvent("CreateUserModalOpened");
     },
     openUpdateModal(user) {
       this.isEditing = true;
       const formattedDate = new Date(user.date_of_birth).toISOString().split('T')[0];
       this.editUserAccountForm = { ...user, date_of_birth: formattedDate, password: "" };
       this.$refs.userModal.show(); 
-      trackEvent("UpdateUserModalOpened", { userId: user.id });
+      console.log("Update User Modal Opened", { userId: user.id });
+      //trackEvent("UpdateUserModalOpened", { userId: user.id });
     },
 
     // Submit Create or Update
@@ -247,7 +258,8 @@ export default {
   },
   created() {
     this.RESTgetusers();
-    trackEvent("AdminPortalVisited");
+    console.log("Admin Portal visited");
+    //trackEvent("AdminPortalVisited");
   },
 };
 </script>
