@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  KeyVault_DEV: devious-kv28-dev
-  KeyVault_UAT: devious-kv28-uat
-  KeyVault_PROD: devious-kv28-prod
+  KeyVault_DEV: devious-kv29-dev
+  KeyVault_UAT: devious-kv29-uat
+  KeyVault_PROD: devious-kv29-prod
 
 jobs:
   build-dev:
@@ -51,8 +51,8 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Fetch SWA token from Key Vault (Development)
-        id: fetch-swaDev-token
+      - name: Fetch web app token from Key Vault (Development)
+        id: fetch-webappdev-token
         run: |
           static_dev=$(az keyvault secret show --vault-name ${{ env.KeyVault_DEV }} --name static-web-deployment-token --query value -o tsv) \
           && echo "static_dev=${static_dev}" >> $GITHUB_ENV
@@ -107,8 +107,8 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Fetch SWA token from Key Vault (UAT)
-        id: fetch-swaDev-token
+      - name: Fetch web app token from Key Vault (UAT)
+        id: fetch-webappuat-token
         run: |
           static_uat=$(az keyvault secret show --vault-name ${{ env.KeyVault_UAT }} --name static-web-deployment-token --query value -o tsv) \
           && echo "static_uat=${static_uat}" >> $GITHUB_ENV
@@ -123,7 +123,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ env.static_uat  }}
           action: "upload"
           app_location: .
-          output_location: dist-dev
+          output_location: dist-uat
   
   build-prod:
     runs-on: ubuntu-latest
@@ -135,16 +135,16 @@ jobs:
           node-version: '18.x'
           cache: 'npm'
 
-      - name: npm install, build, and test (UAT)
+      - name: npm install, build, and test (PROD)
         run: |
           npm install
           npm run build:prod ## This command will build the Vue.js app using .env.prod variables
 
-      - name: Upload artifact for deployment job (UAT)
+      - name: Upload artifact for deployment job (PROD)
         uses: actions/upload-artifact@v4
         with:
-          name: node-app-uat
-          path: dist-uat/
+          name: node-app-prod
+          path: dist-prod/
 
   deploy-prod:
     if: github.event.pull_request.base.ref == 'main' || github.event_name == 'workflow_dispatch'
@@ -157,14 +157,14 @@ jobs:
       - name: Download artifact from build-uat job
         uses: actions/download-artifact@v4
         with:
-          name: node-app-uat
+          name: node-app-prod
 
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Fetch SWA token from Key Vault (PROD)
-        id: fetch-swaDev-token
+      - name: Fetch web app token from Key Vault (PROD)
+        id: fetch-webappprod-token
         run: |
           static_prod=$(az keyvault secret show --vault-name ${{ env.KeyVault_PROD }} --name static-web-deployment-token --query value -o tsv) \
           && echo "static_prod=${static_prod}" >> $GITHUB_ENV
@@ -179,5 +179,5 @@ jobs:
           azure_static_web_apps_api_token: ${{ env.static_prod  }}
           action: "upload"
           app_location: .
-          output_location: dist-dev
+          output_location: dist-prod
 
