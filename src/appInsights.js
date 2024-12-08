@@ -6,7 +6,7 @@ export const initializeAppInsights = () => {
     const instrumentationKey = process.env.VUE_APP_APPINSIGHTS_CONNECTION_STRING;
     appInsights = new ApplicationInsights({
         config: {
-            instrumentationKey: instrumentationKey,
+            connectionString: instrumentationKey,
             enableAutoRouteTracking: true,
             disableFetchTracking: false,
             disableAjaxTracking: false
