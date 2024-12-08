@@ -240,4 +240,3 @@ b-button {
   color: #21d25c;
 }
 </style>
-

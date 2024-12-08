@@ -5,7 +5,8 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build:dev": "vue-cli-service build --mode development",
-    "build:uat": "vue-cli-service build --mode uat"
+    "build:uat": "vue-cli-service build --mode uat",
+    "build:prod": "vue-cli-service build --mode production"
   },
   "dependencies": {
     "@microsoft/applicationinsights-web": "^3.3.4",
