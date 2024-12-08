@@ -8,8 +8,8 @@ on:
 
 env:
   KeyVault_DEV: devious-kv29-dev
-  KeyVault_UAT: devious-kv29-uat
-  KeyVault_PROD: devious-kv29-prod
+  KeyVault_UAT: devious-kv30-uat
+  KeyVault_PROD: devious-kv30-prod
 
 jobs:
   build-dev:
