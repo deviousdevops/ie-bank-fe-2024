@@ -3,10 +3,9 @@ import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 let appInsights = null;
 
 export const initializeAppInsights = () => {
-    const instrumentationKey = process.env.VUE_APP_APPINSIGHTS_CONNECTION_STRING;
     appInsights = new ApplicationInsights({
         config: {
-            connectionString: instrumentationKey,
+            connectionString: process.env.VUE_APP_APP_INSIGHTS_CONNECTION_STRING,
             enableAutoRouteTracking: true,
             disableFetchTracking: false,
             disableAjaxTracking: false
