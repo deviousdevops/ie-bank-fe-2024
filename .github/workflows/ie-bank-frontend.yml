@@ -130,10 +130,6 @@ jobs:
           app_location: .
           output_location: dist-uat
 
-      - name: Output Static Web App URL (UAT)
-        run: |
-          echo "Static Web App URL: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}"
-        
   
   build-prod:
     runs-on: ubuntu-latest
@@ -193,8 +189,6 @@ jobs:
           app_location: .
           output_location: dist-prod
 
-      - name: Output Static Web App URL (Production)
-        run: |
-          echo "Static Web App URL: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}"
+
         
 
