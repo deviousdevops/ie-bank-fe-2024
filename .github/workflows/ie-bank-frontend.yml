@@ -40,6 +40,7 @@ jobs:
     needs: build-dev
     environment:
       name: 'Development'
+      url: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build-dev job
@@ -69,10 +70,7 @@ jobs:
           app_location: .
           output_location: dist-dev
 
-      - name: Output Static Web App URL (Development)
-        run: |
-          echo "Static Web App URL: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}"
-
+      
   build-uat:
     runs-on: ubuntu-latest
     steps:
@@ -100,6 +98,7 @@ jobs:
     needs: [build-uat, deploy-dev]
     environment:
       name: 'UAT'
+      url: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build-uat job
@@ -161,6 +160,7 @@ jobs:
     needs: [build-prod, deploy-uat]
     environment:
       name: 'PROD'
+      url: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build-uat job
