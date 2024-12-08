@@ -40,7 +40,8 @@ jobs:
     needs: build-dev
     environment:
       name: 'Development'
-      url: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}
+    outputs:
+      static_webapp_url: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build-dev job
@@ -98,7 +99,8 @@ jobs:
     needs: [build-uat, deploy-dev]
     environment:
       name: 'UAT'
-      url: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}
+    outputs:
+      static_webapp_url: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build-uat job
@@ -160,8 +162,9 @@ jobs:
     needs: [build-prod, deploy-uat]
     environment:
       name: 'PROD'
-      url: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}
-
+    outputs:
+      static_webapp_url: ${{ steps.deploy-to-staticwebapp.outputs.webapp-url }}
+      
     steps:
       - name: Download artifact from build-uat job
         uses: actions/download-artifact@v4
