@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  KeyVault_DEV: devious-kv1-dev
-  KeyVault_UAT: devious-kv1-uat
-  KeyVault_PROD: devious-kv1-prod
+  KeyVault_DEV: devious-kV1-dev
+  KeyVault_UAT: devious-kV1-uat
+  KeyVault_PROD: devious-kV1-prod
 
 jobs:
   build-dev:
